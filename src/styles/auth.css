@@ -1,0 +1,273 @@
+/* ═══════════════════════════════════════════════════
+   Login & Register Page Styles
+   ─────────────────────────────────────────────────
+   Matches high-fidelity prototype:
+   - Fredoka One font for logo
+   - Cat face as the dot of "i" (SVG, same pink)
+   - Floating pet icons: paw, fish, bone (light, blurred)
+   - Inputs with moderate rounding (~10px)
+   ═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════
+   Floating Pet Decorations
+   ─────────────────────────────────────────────────
+   Paw, fish, and bone shapes that drift slowly
+   across the background. Light pink, blurred.
+   ═══════════════════════════════════════════════════ */
+
+.auth-deco {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.28;
+  filter: blur(6px);
+}
+
+/* ── Paw print (starts top-left) ──────────────────── */
+.auth-deco-paw {
+  top: -30px;
+  left: -30px;
+  width: 280px;
+  height: 280px;
+  animation: decoWander1 18s linear infinite;
+}
+
+/* ── Fish (starts bottom-right) ───────────────────── */
+.auth-deco-fish {
+  bottom: -20px;
+  right: -20px;
+  width: 200px;
+  height: 180px;
+  animation: decoWander2 15s linear infinite;
+}
+
+/* ── Bone (starts top-right) ──────────────────────── */
+.auth-deco-bone {
+  top: -20px;
+  right: -40px;
+  width: 200px;
+  height: 140px;
+  animation: decoWander3 20s linear infinite;
+}
+
+/* ── Extra paw (starts bottom-center, very soft) ──── */
+.auth-deco-paw2 {
+  bottom: -50px;
+  right: 15%;
+  width: 240px;
+  height: 240px;
+  opacity: 0.18;
+  filter: blur(10px);
+  animation: decoWander4 22s linear infinite;
+}
+
+/* Paw drifts from top-left → across center → bottom-right → back */
+@keyframes decoWander1 {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  10%  { transform: translate(20vw, 10vh) rotate(15deg); }
+  25%  { transform: translate(45vw, 25vh) rotate(-10deg); }
+  40%  { transform: translate(30vw, 50vh) rotate(20deg); }
+  55%  { transform: translate(55vw, 35vh) rotate(-5deg); }
+  70%  { transform: translate(25vw, 60vh) rotate(12deg); }
+  85%  { transform: translate(10vw, 30vh) rotate(-8deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* Fish drifts from bottom-right → across center-left → back */
+@keyframes decoWander2 {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  12%  { transform: translate(-25vw, -15vh) rotate(-12deg); }
+  28%  { transform: translate(-50vw, -30vh) rotate(8deg); }
+  42%  { transform: translate(-35vw, -55vh) rotate(-15deg); }
+  58%  { transform: translate(-60vw, -25vh) rotate(10deg); }
+  72%  { transform: translate(-40vw, -45vh) rotate(-6deg); }
+  88%  { transform: translate(-15vw, -20vh) rotate(5deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* Bone drifts from top-right → down-left → across → back */
+@keyframes decoWander3 {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  14%  { transform: translate(-30vw, 20vh) rotate(-20deg); }
+  30%  { transform: translate(-55vw, 40vh) rotate(10deg); }
+  46%  { transform: translate(-40vw, 60vh) rotate(-12deg); }
+  62%  { transform: translate(-20vw, 45vh) rotate(15deg); }
+  78%  { transform: translate(-45vw, 15vh) rotate(-8deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* Extra paw drifts from bottom-center → up-left → across → back */
+@keyframes decoWander4 {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  16%  { transform: translate(15vw, -30vh) rotate(10deg); }
+  33%  { transform: translate(-20vw, -55vh) rotate(-15deg); }
+  50%  { transform: translate(10vw, -40vh) rotate(8deg); }
+  66%  { transform: translate(-25vw, -20vh) rotate(-10deg); }
+  83%  { transform: translate(5vw, -50vh) rotate(12deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* ═══════════════════════════════════════════════════
+   Auth Card (centered form)
+   ═══════════════════════════════════════════════════ */
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Logo ─────────────────────────────────────────── */
+.auth-logo {
+  margin-bottom: var(--space-2xl);
+  text-align: center;
+  position: relative;
+}
+
+.auth-logo-text {
+  font-family: 'Fredoka One', cursive;
+  font-size: 4rem;
+  color: var(--color-primary);
+  letter-spacing: -1px;
+  line-height: 1;
+  position: relative;
+  display: inline-block;
+}
+
+/* Cat face as the dot on the "i" — positioned over the first character */
+.auth-logo-cat {
+  position: absolute;
+  top: -14px;
+  left: -2px;
+  width: 28px;
+  height: 28px;
+}
+
+/* ── Form ─────────────────────────────────────────── */
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Override inputs to match prototype: moderate rounding, not pill */
+.auth-form .form-input {
+  border-radius: 10px;
+  padding: 14px 16px;
+  border-color: var(--gray-300);
+}
+
+.auth-submit {
+  margin-top: var(--space-sm);
+}
+
+/* Override button to match prototype: rounded but not pill */
+.auth-submit.btn {
+  border-radius: 12px;
+  padding: 14px 24px;
+}
+
+.auth-footer {
+  margin-top: var(--space-md);
+  text-align: center;
+}
+
+.auth-footer-link {
+  color: var(--color-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-style: italic;
+}
+
+.auth-footer-link:hover {
+  text-decoration: underline;
+}
+
+.auth-switch {
+  margin-top: var(--space-lg);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.auth-switch a {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+
+/* ═══════════════════════════════════════════════════
+   Forgot Password Page
+   ═══════════════════════════════════════════════════ */
+
+.forgot-back-link {
+  position: absolute;
+  top: var(--space-xl);
+  left: var(--space-xl);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-primary);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: var(--pink-50);
+  transition: all var(--transition-fast);
+}
+
+.forgot-back-link:hover {
+  background: var(--pink-100);
+}
+
+.forgot-card {
+  max-width: 480px;
+  align-items: flex-start;
+}
+
+.forgot-title {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-lg);
+  width: 100%;
+}
+
+.forgot-description {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-lg);
+}
+
+.forgot-success {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  width: 100%;
+}
