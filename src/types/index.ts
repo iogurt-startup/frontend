@@ -71,6 +71,9 @@ export interface Patient {
   name: string
   photoUrl?: string | null
   birthDate?: string | null
+  sex?: string | null
+  weightKg?: number | null
+  observations?: string | null
   microchip?: string | null
   allergies?: string | null
   species: string
@@ -87,6 +90,9 @@ export interface CreatePatientRequest {
   species: string
   breed?: string
   birthDate?: string
+  sex?: string
+  weightKg?: number
+  observations?: string
   microchip?: string
   allergies?: string
   photoUrl?: string
@@ -97,9 +103,39 @@ export interface UpdatePatientRequest {
   species?: string
   breed?: string
   birthDate?: string
+  sex?: string
+  weightKg?: number
+  observations?: string
   microchip?: string
   allergies?: string
   photoUrl?: string
+}
+
+/* Combined request for registering patient + tutor in one form */
+export interface RegisterPatientFormData {
+  // Patient
+  petName: string
+  birthDate: string
+  species: string
+  breed: string
+  sex: string
+  weightKg: string
+  hasMicrochip: string
+  observations: string
+  // Tutor
+  tutorFullName: string
+  tutorCpf: string
+  tutorPhone: string
+  tutorEmail: string
+  tutorInsurance: string
+  // Address
+  cep: string
+  state: string
+  city: string
+  neighborhood: string
+  street: string
+  addressNumber: string
+  complement: string
 }
 
 // ── Appointments ──────────────────────────────────

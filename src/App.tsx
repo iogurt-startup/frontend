@@ -12,6 +12,8 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
 // Pages
 import { HomePage } from './pages/home/HomePage'
+import { PatientsListPage } from './pages/patients/PatientsListPage'
+import { PatientRegisterPage } from './pages/patients/PatientRegisterPage'
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -57,7 +59,8 @@ export default function App() {
         <Route element={<ProtectedRoute allowedRoles={['OWNER', 'VET']} />}>
           <Route element={<AppLayout />}>
             <Route index element={<HomePage />} />
-            <Route path="pacientes" element={<div><div className="page-header"><h1>Pacientes</h1></div><p style={{ color: 'var(--color-text-secondary)' }}>Em desenvolvimento...</p></div>} />
+            <Route path="pacientes" element={<PatientsListPage />} />
+            <Route path="pacientes/cadastrar" element={<PatientRegisterPage />} />
             <Route path="agenda" element={<div><div className="page-header"><h1>Agenda</h1></div><p style={{ color: 'var(--color-text-secondary)' }}>Em desenvolvimento...</p></div>} />
             <Route path="historico" element={<div><div className="page-header"><h1>Histórico</h1></div><p style={{ color: 'var(--color-text-secondary)' }}>Em desenvolvimento...</p></div>} />
           </Route>

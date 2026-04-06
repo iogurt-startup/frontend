@@ -1,0 +1,521 @@
+/* ═══════════════════════════════════════════════════
+   Patients Module — List & Registration
+   ═══════════════════════════════════════════════════ */
+
+/* ── List Page ────────────────────────────────────── */
+.patients-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+}
+
+.patients-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.patients-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.patients-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: var(--gray-600);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.patients-filter-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.patients-filter-btn:hover {
+  color: var(--color-primary);
+}
+
+.patients-add-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 8px 18px;
+  background: transparent;
+  border: none;
+  color: var(--gray-700);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.patients-add-btn:hover {
+  color: var(--color-primary);
+}
+
+.patients-add-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Table action button */
+.table-action-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.table-action-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--pink-50);
+}
+
+/* Empty state */
+.patients-empty {
+  text-align: center;
+  padding: var(--space-2xl) var(--space-lg);
+  color: var(--color-text-muted);
+}
+
+.patients-empty svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--space-md);
+  color: var(--gray-300);
+}
+
+.patients-empty p {
+  font-size: 0.9375rem;
+}
+
+/* Loading */
+.patients-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2xl);
+}
+
+/* ── Registration Page ────────────────────────────── */
+.register-patient-page {
+  width: 100%;
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-sm);
+  margin: 0 auto;
+}
+
+.register-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+}
+
+.register-back-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: transparent;
+  border: none;
+  color: var(--gray-600);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color var(--transition-fast);
+}
+
+.register-back-btn:hover {
+  color: var(--color-text);
+}
+
+.register-back-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.register-submit-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px 24px;
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  color: var(--color-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.register-submit-btn:hover {
+  background: var(--pink-50);
+}
+
+.register-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.register-submit-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.register-title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-xl);
+}
+
+/* ── Section headers ──────────────────────────────── */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid var(--pink-100);
+}
+
+.section-header svg {
+  width: 22px;
+  height: 22px;
+  color: var(--color-primary);
+}
+
+.section-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.section-subtitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+/* ── Form grid ────────────────────────────────────── */
+.form-row {
+  display: grid;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.form-row-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.form-row-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.form-row-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.form-row-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.form-row-1 {
+  grid-template-columns: 1fr;
+}
+
+/* Photo + fields row */
+.form-row-photo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  align-items: start;
+}
+
+.photo-upload-container {
+  flex: 0 0 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.form-group.flex-1 {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* ── Photo upload ─────────────────────────────────── */
+.photo-upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.photo-upload {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--pink-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--pink-50);
+  transition: all var(--transition-fast);
+  overflow: hidden;
+}
+
+.photo-upload:hover {
+  border-color: var(--color-primary);
+  background: var(--pink-100);
+}
+
+.photo-upload svg {
+  width: 40px;
+  height: 40px;
+  color: var(--pink-300);
+}
+
+.photo-upload img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-upload-label {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.photo-upload-label svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Form label with required ─────────────────────── */
+.register-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+
+.register-label .required {
+  color: var(--color-primary);
+  margin-left: 2px;
+}
+
+/* ── Register inputs ──────────────────────────────── */
+.register-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.register-input::placeholder {
+  color: var(--gray-400);
+}
+
+.register-input:focus {
+  border-color: var(--color-primary);
+}
+
+.register-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239E9E9E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  transition: border-color var(--transition-fast);
+}
+
+.register-select:focus {
+  border-color: var(--color-primary);
+}
+
+/* ── Radio groups ─────────────────────────────────── */
+.radio-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding-top: 6px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+.radio-option input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--gray-300);
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.radio-option input[type="radio"]:checked {
+  border-color: var(--color-primary);
+}
+
+.radio-option input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+/* ── Textarea ─────────────────────────────────────── */
+.register-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background: var(--color-bg);
+  outline: none;
+  resize: vertical;
+  min-height: 60px;
+  transition: border-color var(--transition-fast);
+}
+
+.register-textarea::placeholder {
+  color: var(--gray-400);
+}
+
+.register-textarea:focus {
+  border-color: var(--color-primary);
+}
+
+/* ── Separator ────────────────────────────────────── */
+.form-separator {
+  border: none;
+  border-top: 1px solid var(--gray-200);
+  margin: var(--space-xl) 0;
+}
+
+/* ── Error message ────────────────────────────────── */
+.field-error {
+  font-size: 0.75rem;
+  color: var(--color-danger);
+  margin-top: 4px;
+}
+
+/* ── Toast notification ──────────────────────────── */
+.register-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  padding: 14px 24px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  box-shadow: var(--shadow-lg);
+  animation: slideIn 0.3s ease;
+}
+
+.register-toast.success {
+  background: var(--color-success);
+  color: white;
+}
+
+.register-toast.error {
+  background: var(--color-danger);
+  color: white;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 1024px) {
+  .register-patient-page {
+    padding: var(--space-lg);
+  }
+}
+
+@media (max-width: 900px) {
+  .form-row-photo {
+    flex-direction: column;
+    align-items: center;
+  }
+  .form-group.flex-1 {
+    width: 100%;
+  }
+  .form-row-5,
+  .form-row-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-row-5,
+  .form-row-4,
+  .form-row-3,
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+  .register-top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+}
