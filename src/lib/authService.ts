@@ -5,6 +5,10 @@ import type {
   RegisterRequest,
 } from '../types'
 
+interface GoogleAuthResponse extends AuthResponse {
+  isNewUser: boolean
+}
+
 export const authService = {
   async login(data: LoginRequest): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>('/auth/login', data)
@@ -23,5 +27,10 @@ export const authService = {
 
   async logout(): Promise<void> {
     await api.delete('/auth/logout')
+  },
+
+  async googleLogin(accessToken: string): Promise<GoogleAuthResponse> {
+    const response = await api.post<GoogleAuthResponse>('/auth/google', { accessToken })
+    return response.data
   },
 }
