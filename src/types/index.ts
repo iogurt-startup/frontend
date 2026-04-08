@@ -193,6 +193,18 @@ export interface ClinicalHistoryItem extends ClinicalRecord {
   } | null
 }
 
+export interface ClinicHistoryListItem {
+  id: string
+  patientId: string
+  patientName: string
+  tutorName: string
+  date: string
+  species: string
+  vetName: string
+  record: ClinicalHistoryItem
+  patient: Patient
+}
+
 export interface UpdateClinicalRecordRequest {
   weightKg?: number
   clinicalNotes?: string

@@ -23,6 +23,8 @@ import { PatientRegisterPage } from './pages/patients/PatientRegisterPage'
 import { PatientDetailsPage } from './pages/patients/PatientDetailsPage'
 import { AgendaPage } from './pages/agenda/AgendaPage'
 import { ClinicalCarePage } from './pages/clinical/ClinicalCarePage'
+import { HistoryListPage } from './pages/history/HistoryListPage'
+import { HistoryDetailsPage } from './pages/history/HistoryDetailsPage'
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -92,7 +94,8 @@ export default function App() {
               element={<ClinicalCarePage />}
             />
             <Route path="agenda" element={<AgendaPage />} />
-            <Route path="historico" element={<div><div className="page-header"><h1>Histórico</h1></div><p style={{ color: 'var(--color-text-secondary)' }}>Em desenvolvimento...</p></div>} />
+            <Route path="historico" element={<HistoryListPage />} />
+            <Route path="historico/:recordId/pacientes/:patientId" element={<HistoryDetailsPage />} />
           </Route>
         </Route>
 
