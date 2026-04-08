@@ -185,6 +185,14 @@ export interface ClinicalRecord {
   vet?: Pick<User, 'id' | 'name'>
 }
 
+export interface ClinicalHistoryItem extends ClinicalRecord {
+  appointment?: {
+    id: string
+    category: AppointmentCategory
+    dateTime: string
+  } | null
+}
+
 export interface UpdateClinicalRecordRequest {
   weightKg?: number
   clinicalNotes?: string
