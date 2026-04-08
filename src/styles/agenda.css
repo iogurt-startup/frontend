@@ -1,0 +1,238 @@
+/* src/styles/agenda.css */
+.agenda-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.agenda-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+}
+
+.agenda-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.agenda-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xl);
+}
+
+.agenda-date-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  color: var(--gray-500);
+  font-size: 0.9375rem;
+}
+
+.agenda-date-arrow {
+  cursor: pointer;
+  padding: 4px;
+  font-weight: 500;
+}
+
+.agenda-date-arrow:hover {
+  color: var(--color-primary);
+}
+
+.btn-agendar-header {
+  background: none;
+  border: none;
+  color: var(--gray-500);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-agendar-header:hover {
+  color: var(--color-primary);
+}
+
+/* Grid Layout */
+.agenda-schedule-container {
+  position: relative;
+  margin-top: var(--space-lg);
+}
+
+.agenda-grid-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.agenda-time {
+  width: 60px;
+  flex-shrink: 0;
+  color: var(--gray-500);
+  font-size: 0.8125rem;
+  transform: translateY(-8px);
+}
+
+.agenda-line {
+  flex: 1;
+  border-top: 1px solid var(--gray-200);
+}
+
+/* Events Overlay */
+.agenda-events {
+  position: absolute;
+  top: 0;
+  left: 60px;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.agenda-card {
+  position: absolute;
+  left: 10px;
+  right: 20px;
+  border-radius: var(--radius-sm);
+  padding: 12px var(--space-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.agenda-card:hover {
+  transform: scale(1.005);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-blue {
+  background-color: #E2F5FA;
+  border: 1px solid #7DD3FC;
+}
+
+.card-yellow {
+  background-color: #FEF9C3;
+  border: 1px solid #FDE047;
+}
+
+.card-pink {
+  background-color: #FDF2F8;
+  border: 1px solid #FBCFE8;
+}
+
+.card-purple {
+  background-color: #F8F5FF;
+  border: 1px solid #E9D5FF;
+}
+
+/* Card Content */
+.agenda-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.pet-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: white;
+}
+
+.pet-name {
+  font-weight: 600;
+  color: var(--gray-900);
+  font-size: 0.9375rem;
+}
+
+.agenda-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.8125rem;
+}
+
+.detail-line {
+  display: flex;
+  gap: 4px;
+}
+
+.detail-label {
+  color: var(--gray-500);
+}
+
+.detail-value {
+  color: var(--gray-800);
+}
+
+/* Custom Success Toast for Agenda */
+.custom-toast-success {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  background-color: #8CCB80;
+  color: white;
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: var(--shadow-md);
+  z-index: 1000;
+  animation: slideInCustom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  min-width: 360px;
+}
+
+@keyframes slideInCustom {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.toast-content-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast-icon-circle {
+  width: 24px;
+  height: 24px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8CCB80;
+  flex-shrink: 0;
+}
+
+.custom-toast-success span {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.toast-close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.toast-close-btn:hover {
+  opacity: 1;
+}

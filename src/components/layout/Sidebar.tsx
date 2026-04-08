@@ -26,7 +26,10 @@ export function Sidebar() {
     }
   }
 
-  const initials = user?.name
+  const displayName = user?.name || 'Rafael Rocha'
+  const displayAvatar = user?.avatarUrl || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&h=100&fit=crop'
+
+  const initials = displayName
     ?.split(' ')
     .map((n) => n[0])
     .join('')
@@ -58,13 +61,13 @@ export function Sidebar() {
       <div className="sidebar-footer">
         <div className="sidebar-user">
           <div className="sidebar-avatar">
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt={user.name} />
+            {displayAvatar ? (
+              <img src={displayAvatar} alt={displayName} />
             ) : (
               initials
             )}
           </div>
-          <span className="sidebar-username">{user?.name}</span>
+          <span className="sidebar-username">{displayName}</span>
         </div>
 
         <button className="sidebar-logout" onClick={handleLogout}>
