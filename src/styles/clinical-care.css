@@ -229,6 +229,10 @@
   min-height: 100%;
 }
 
+.care-side-card-mobile {
+  display: none;
+}
+
 .care-side-header {
   gap: 10px;
   color: var(--pink-500);
@@ -653,6 +657,15 @@
     width: 100%;
     padding: 18px;
     border-radius: 18px;
+  }
+
+  .care-side-card-desktop {
+    display: none;
+  }
+
+  .care-side-card-mobile {
+    display: block;
+    margin-bottom: 18px;
   }
 
   .care-side-content {
