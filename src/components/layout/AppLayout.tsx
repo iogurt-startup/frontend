@@ -10,9 +10,12 @@ export function AppLayout() {
   const showMobileMenuButton = useMemo(
     () =>
       [
+        '/pacientes',
+        '/agenda',
         '/historico',
         '/historico/:recordId/pacientes/:patientId',
         '/atendimentos/:appointmentId/pacientes/:patientId',
+        '/pacientes/:id',
       ].some((pattern) => matchPath(pattern, location.pathname)),
     [location.pathname],
   )

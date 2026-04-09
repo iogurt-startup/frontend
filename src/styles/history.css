@@ -127,6 +127,11 @@
   border-radius: 16px;
   padding: 22px;
   box-shadow: var(--shadow-sm);
+  background: #fff;
+}
+
+.history-filters-overlay {
+  display: contents;
 }
 
 .history-filters-header,
@@ -473,6 +478,25 @@
     border-radius: 14px;
   }
 
+  .history-filters-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 112px 14px 24px;
+    background: rgba(17, 24, 39, 0.14);
+    z-index: 70;
+  }
+
+  .history-filters-card {
+    width: 100%;
+    max-width: 420px;
+    max-height: calc(100vh - 136px);
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+  }
+
   .history-filter-group {
     margin-top: 16px;
   }
@@ -543,6 +567,10 @@
   .history-detail-kicker,
   .history-detail-block h3 {
     font-size: 0.9rem;
+  }
+
+  .history-filters-overlay {
+    padding: 104px 12px 20px;
   }
 
   .history-detail-block p,

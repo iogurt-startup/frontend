@@ -264,54 +264,56 @@ export function HistoryListPage() {
         </div>
 
         {showFilters && (
-          <aside className="history-filters-card">
-            <div className="history-filters-header">
-              <h2>Filtrar</h2>
-              <button type="button" onClick={() => setShowFilters(false)}>
-                ×
-              </button>
-            </div>
-
-            <div className="history-filter-group">
-              <label htmlFor="history-filter-date">Data</label>
-              <div className="history-filter-input">
-                <input
-                  id="history-filter-date"
-                  type="text"
-                  placeholder="dd/mm/aaaa"
-                  value={filterDate}
-                  maxLength={10}
-                  onChange={(event) => setFilterDate(maskDate(event.target.value))}
-                />
-                <Calendar size={16} />
+          <div className="history-filters-overlay" onClick={() => setShowFilters(false)}>
+            <aside className="history-filters-card" onClick={(event) => event.stopPropagation()}>
+              <div className="history-filters-header">
+                <h2>Filtrar</h2>
+                <button type="button" onClick={() => setShowFilters(false)}>
+                  ×
+                </button>
               </div>
-            </div>
 
-            <div className="history-filter-group">
-              <label htmlFor="history-filter-species">Espécie</label>
-              <select
-                id="history-filter-species"
-                value={filterSpecies}
-                onChange={(event) => setFilterSpecies(event.target.value)}
-              >
-                <option value="">Selecionar</option>
-                {speciesOptions.map((species) => (
-                  <option key={species} value={species}>
-                    {species}
-                  </option>
-                ))}
-              </select>
-            </div>
+              <div className="history-filter-group">
+                <label htmlFor="history-filter-date">Data</label>
+                <div className="history-filter-input">
+                  <input
+                    id="history-filter-date"
+                    type="text"
+                    placeholder="dd/mm/aaaa"
+                    value={filterDate}
+                    maxLength={10}
+                    onChange={(event) => setFilterDate(maskDate(event.target.value))}
+                  />
+                  <Calendar size={16} />
+                </div>
+              </div>
 
-            <div className="history-filter-actions">
-              <button type="button" className="ghost" onClick={handleClearFilters}>
-                Limpar filtros
-              </button>
-              <button type="button" className="primary" onClick={handleApplyFilters}>
-                Filtrar
-              </button>
-            </div>
-          </aside>
+              <div className="history-filter-group">
+                <label htmlFor="history-filter-species">Espécie</label>
+                <select
+                  id="history-filter-species"
+                  value={filterSpecies}
+                  onChange={(event) => setFilterSpecies(event.target.value)}
+                >
+                  <option value="">Selecionar</option>
+                  {speciesOptions.map((species) => (
+                    <option key={species} value={species}>
+                      {species}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="history-filter-actions">
+                <button type="button" className="ghost" onClick={handleClearFilters}>
+                  Limpar filtros
+                </button>
+                <button type="button" className="primary" onClick={handleApplyFilters}>
+                  Filtrar
+                </button>
+              </div>
+            </aside>
+          </div>
         )}
       </div>
     </div>

@@ -106,7 +106,7 @@ export function PatientsListPage() {
   }
 
   return (
-    <div>
+    <div className="patients-page">
       <div className="patients-header">
         <h1>Pacientes</h1>
         <div className="patients-header-actions">
@@ -120,95 +120,76 @@ export function PatientsListPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div style={{ position: 'relative' }}>
-            <button className="patients-filter-btn" id="patient-filter-btn" onClick={() => setShowFilter(!showFilter)}>
+          <div className="patients-filter-wrapper">
+            <button
+              className="patients-filter-btn"
+              id="patient-filter-btn"
+              type="button"
+              onClick={() => setShowFilter(!showFilter)}
+            >
               <Filter />
               Filtrar
             </button>
-            
+
             {showFilter && (
-              <div 
-                className="filter-popover" 
-                style={{
-                  position: 'absolute', 
-                  top: '100%', 
-                  right: 0,
-                  marginTop: '12px',
-                  background: '#fff', 
-                  padding: '24px',
-                  borderRadius: '16px', 
-                  boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-                  zIndex: 100, 
-                  width: '340px'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>Filtrar</h3>
-                  <button onClick={() => setShowFilter(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--gray-500)' }}>
-                    <X size={20} />
-                  </button>
-                </div>
-
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '8px', color: 'var(--color-text)' }}>
-                    Espécie
-                  </label>
-                  <select 
-                    style={{
-                      width: '100%', padding: '12px 14px', border: '1px solid var(--gray-300)', 
-                      borderRadius: '8px', fontSize: '0.875rem', outline: 'none', cursor: 'pointer',
-                      appearance: 'none', background: '#fff',
-                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239E9E9E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-                      backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center'
-                    }}
-                    value={filterSpecies}
-                    onChange={(e) => setFilterSpecies(e.target.value)}
-                  >
-                    <option value="">Selecionar</option>
-                    <option value="Cachorro">Cachorro</option>
-                    <option value="Gato">Gato</option>
-                    <option value="Pássaro">Pássaro</option>
-                    <option value="Roedor">Roedor</option>
-                    <option value="Réptil">Réptil</option>
-                    <option value="Peixe">Peixe</option>
-                    <option value="Outro">Outro</option>
-                  </select>
-                </div>
-
-                <div style={{ marginBottom: '32px' }}>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '8px', color: 'var(--color-text)' }}>
-                    Data
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <input 
-                      type="text" 
-                      placeholder="dd/mm/aaaa" 
-                      value={filterDate}
-                      onChange={(e) => setFilterDate(maskDate(e.target.value))}
-                      maxLength={10}
-                      style={{
-                        width: '100%', padding: '12px 14px', paddingRight: '40px',
-                        border: '1px solid var(--gray-300)', borderRadius: '8px', 
-                        fontSize: '0.875rem', outline: 'none'
-                      }}
-                    />
-                    <Calendar size={18} color="var(--gray-400)" style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+              <div className="patients-filter-overlay" onClick={() => setShowFilter(false)}>
+                <div
+                  className="patients-filter-popover"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <div className="patients-filter-popover-header">
+                    <h3>Filtrar</h3>
+                    <button
+                      type="button"
+                      className="patients-filter-close"
+                      onClick={() => setShowFilter(false)}
+                    >
+                      <X size={20} />
+                    </button>
                   </div>
-                </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <button 
-                    onClick={clearFilters}
-                    style={{ background: 'transparent', border: 'none', color: 'var(--gray-500)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}
-                  >
-                    Limpar filtros
-                  </button>
-                  <button 
-                    onClick={applyFilters}
-                    style={{ background: 'var(--pink-200)', color: '#fff', border: 'none', padding: '10px 32px', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' }}
-                  >
-                    Filtrar
-                  </button>
+                  <div className="patients-filter-field">
+                    <label htmlFor="patients-filter-species">Espécie</label>
+                    <select
+                      id="patients-filter-species"
+                      className="patients-filter-select"
+                      value={filterSpecies}
+                      onChange={(e) => setFilterSpecies(e.target.value)}
+                    >
+                      <option value="">Selecionar</option>
+                      <option value="Cachorro">Cachorro</option>
+                      <option value="Gato">Gato</option>
+                      <option value="Pássaro">Pássaro</option>
+                      <option value="Roedor">Roedor</option>
+                      <option value="Réptil">Réptil</option>
+                      <option value="Peixe">Peixe</option>
+                      <option value="Outro">Outro</option>
+                    </select>
+                  </div>
+
+                  <div className="patients-filter-field patients-filter-field-date">
+                    <label htmlFor="patients-filter-date">Data</label>
+                    <div className="patients-filter-input">
+                      <input
+                        id="patients-filter-date"
+                        type="text"
+                        placeholder="dd/mm/aaaa"
+                        value={filterDate}
+                        onChange={(e) => setFilterDate(maskDate(e.target.value))}
+                        maxLength={10}
+                      />
+                      <Calendar size={18} />
+                    </div>
+                  </div>
+
+                  <div className="patients-filter-actions">
+                    <button type="button" className="ghost" onClick={clearFilters}>
+                      Limpar filtros
+                    </button>
+                    <button type="button" className="primary" onClick={applyFilters}>
+                      Filtrar
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -234,8 +215,8 @@ export function PatientsListPage() {
         </div>
       ) : (
         <>
-          <div className="table-container">
-            <table className="table" id="patients-table">
+          <div className="table-container patients-table-card">
+            <table className="table patients-table" id="patients-table">
               <thead>
                 <tr>
                   <th>Paciente</th>
