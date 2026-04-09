@@ -241,27 +241,276 @@
 }
 
 @media (max-width: 768px) {
+  .landing-header {
+    padding: 12px 0;
+  }
+
+  .landing-container {
+    gap: 15px;
+  }
+
   .landing-logo {
-    font-size: 24px;
+    font-size: 20px;
   }
 
   .landing-nav {
-    gap: 20px;
+    gap: 0;
     display: none;
   }
 
+  .landing-login-container {
+    margin-left: auto;
+  }
+
+  .landing-login-btn {
+    font-size: 12px;
+    padding: 4px 12px;
+  }
+
+  .landing-dropdown {
+    min-width: 120px;
+    right: -10px;
+  }
+
+  .landing-dropdown-item {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
   .landing-hero {
-    padding-left: 30px;
+    height: 400px;
+    padding-left: 20px;
+    padding-right: 20px;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 40px;
   }
 
   .landing-hero h1 {
-    font-size: 36px;
-    margin-bottom: 30px;
+    font-size: 32px;
+    margin-bottom: 24px;
+    line-height: 1.3;
+  }
+
+  .landing-hero-content {
+    max-width: 100%;
   }
 
   .landing-cta-btn {
-    padding: 14px 28px;
+    padding: 12px 24px;
+    font-size: 13px;
+  }
+
+  .landing-section-container {
+    padding: 40px 20px;
+  }
+
+  .landing-section h2 {
+    font-size: 28px;
+    margin-bottom: 24px;
+  }
+
+  .landing-about > .landing-section-container > p {
     font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  .about-features {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .feature h3 {
+    font-size: 16px;
+  }
+
+  .feature p {
+    font-size: 13px;
+  }
+
+  .plans-grid {
+    gap: 15px;
+    grid-template-columns: 1fr;
+  }
+
+  .plan-card.featured {
+    transform: scale(1);
+  }
+
+  .plan-card {
+    padding: 24px 20px;
+  }
+
+  .plan-card h3 {
+    font-size: 18px;
+  }
+
+  .plan-price {
+    font-size: 28px;
+  }
+
+  .plan-features li {
+    padding: 8px 0;
+    font-size: 12px;
+  }
+
+  .plan-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 30px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-header {
+    padding: 10px 0;
+  }
+
+  .landing-container {
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .landing-logo {
+    font-size: 18px;
+  }
+
+  .landing-login-btn {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .landing-hero {
+    height: 350px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 30px;
+  }
+
+  .landing-hero::before {
+    background: linear-gradient(90deg, rgba(245, 240, 237, 0.85) 0%, rgba(232, 196, 208, 0.7) 20%, rgba(232, 196, 208, 0.4) 50%, rgba(232, 196, 208, 0) 100%);
+  }
+
+  .landing-hero h1 {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .landing-hero-content {
+    max-width: 100%;
+  }
+
+  .landing-cta-btn {
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+
+  .landing-section-container {
+    padding: 30px 16px;
+  }
+
+  .landing-section h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .landing-about > .landing-section-container > p {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  .feature {
+    padding: 20px 16px;
+  }
+
+  .feature h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .feature p {
+    font-size: 12px;
+  }
+
+  .plans-grid {
+    gap: 12px;
+  }
+
+  .plan-card {
+    padding: 20px 16px;
+  }
+
+  .plan-card h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .plan-price {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .plan-price span {
+    font-size: 12px;
+  }
+
+  .plan-features {
+    padding: 16px 0;
+  }
+
+  .plan-features li {
+    padding: 6px 0;
+    font-size: 11px;
+  }
+
+  .plan-btn {
+    margin-top: 16px;
+    padding: 9px 16px;
+    font-size: 11px;
+  }
+
+  .featured-badge {
+    font-size: 10px;
+    padding: 4px 12px;
+    top: -8px;
+  }
+
+  .footer-content {
+    padding: 24px 16px;
+    gap: 24px;
+  }
+
+  .footer-logo {
+    font-size: 20px;
+  }
+
+  .footer-description {
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  .footer-socials {
+    gap: 8px;
+  }
+
+  .social-link {
+    width: 36px;
+    height: 36px;
+  }
+
+  .footer-section h4 {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .footer-section a {
+    font-size: 12px;
   }
 }
 
@@ -448,27 +697,4 @@
 .plan-btn-featured:hover {
   background: #ff4fab;
   border-color: #ff4fab;
-}
-
-@media (max-width: 768px) {
-  .landing-section-container {
-    padding: 60px 20px;
-  }
-
-  .landing-section h2 {
-    font-size: 32px;
-  }
-
-  .plans-grid {
-    gap: 20px;
-  }
-
-  .plan-card.featured {
-    transform: scale(1);
-  }
-
-  .about-features {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
 }
