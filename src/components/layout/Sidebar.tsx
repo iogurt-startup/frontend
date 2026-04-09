@@ -11,7 +11,12 @@ const navItems = [
   { to: '/historico', label: 'Histórico', icon: Clock },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  className?: string
+  onNavClick?: () => void
+}
+
+export function Sidebar({ className, onNavClick }: SidebarProps) {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
 
@@ -37,7 +42,7 @@ export function Sidebar() {
     .toUpperCase()
 
   return (
-    <aside className="sidebar">
+    <aside className={['sidebar', className].filter(Boolean).join(' ')}>
       <div className="sidebar-logo">
         <span className="sidebar-logo-text">iougurt</span>
       </div>
@@ -51,6 +56,7 @@ export function Sidebar() {
               `sidebar-link${isActive ? ' active' : ''}`
             }
             end={item.to === '/'}
+            onClick={onNavClick}
           >
             <item.icon />
             {item.label}
