@@ -157,6 +157,7 @@
 
 .care-summary-row,
 .care-info-row {
+  display: flex;
   justify-content: space-between;
   gap: var(--space-lg);
   padding-bottom: 8px;
@@ -488,12 +489,14 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
 
 @media (max-width: 1100px) {
+
   .care-grid,
   .care-details-grid {
     flex-direction: column;
@@ -517,44 +520,319 @@
 
 @media (max-width: 768px) {
   .care-page {
-    padding: var(--space-lg);
+    padding: 18px 14px 24px;
+    border-radius: 0;
+    min-height: auto;
   }
 
-  .care-page-topbar,
-  .care-top-actions,
-  .care-patient-inline,
-  .care-summary-row,
-  .care-info-row,
+  /* Topbar: keep back button and action buttons on opposite sides */
+  .care-page-topbar {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  /* Top actions: wrap to allow multiple buttons without overflow */
+  .care-top-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-shrink: 1;
+  }
+
+  .care-top-action {
+    width: auto;
+    justify-content: center;
+    padding: 9px 11px;
+    font-size: 0.82rem;
+    gap: 5px;
+  }
+
+  /* Summary rows (Atendimento tab patient card): align like Dados tab */
+  .care-summary-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 10px;
+  }
+
+  .care-summary-row strong {
+    text-align: right;
+    color: var(--gray-500);
+    font-weight: 400;
+  }
+
+  /* Info rows (Dados tab): keep label + value on same horizontal line */
+  .care-info-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 10px;
+  }
+
+  .care-info-row span {
+    flex-shrink: 0;
+    color: var(--gray-700);
+    font-weight: 500;
+  }
+
+  .care-info-row strong {
+    text-align: right;
+    color: var(--gray-500);
+    font-weight: 400;
+  }
+
+  /* History modal header: stack title and date */
   .care-history-modal-header {
     flex-direction: column;
     align-items: flex-start;
   }
 
+  /* Atendimento patient summary: stack like Dados to fill width */
+  .care-patient-inline {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .care-patient-photo {
+    width: 92px;
+    height: 92px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+
+  .care-patient-photo.large {
+    width: 104px;
+    height: 104px;
+    flex-shrink: 0;
+  }
+
+  .care-patient-summary {
+    gap: 8px;
+    width: 100%;
+  }
+
   .care-tabs {
     overflow-x: auto;
+    overflow-y: hidden;
+    margin: 18px 0;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .care-tabs::-webkit-scrollbar {
+    display: none;
   }
 
   .care-tab {
     white-space: nowrap;
+    padding: 12px 20px;
+    font-size: 0.9375rem;
   }
 
-  .care-top-actions {
+  .care-form-group {
+    margin-bottom: 18px;
+  }
+
+  .care-form-group textarea {
+    min-height: 104px;
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .care-side-card {
+    width: 100%;
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .care-side-content {
+    gap: 20px;
+  }
+
+  .care-grid {
+    gap: 20px;
+  }
+
+  .care-column-main {
     width: 100%;
   }
 
-  .care-top-action {
-    width: 100%;
-    justify-content: center;
+  /* Details grid: photo on top, info below in single column */
+  .care-details-grid {
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 20px;
   }
 
-  .care-summary-row strong,
-  .care-info-row strong {
-    text-align: left;
+  /* Collapse two-columns grid to single column */
+  .care-info-grid.two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .care-info-grid {
+    gap: 8px;
+    width: 100%;
+  }
+
+  /* Prontuário table → card list on mobile */
+  .care-history-table-wrapper {
+    overflow: visible;
+    margin: 0;
+  }
+
+  .care-history-table thead {
+    display: none;
+  }
+
+  .care-history-table,
+  .care-history-table tbody,
+  .care-history-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .care-history-table tr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border: 1px solid var(--gray-200);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    background: #fff;
+  }
+
+  .care-history-table td {
+    display: block;
+    border: none;
+    padding: 0;
+    font-size: 0.9rem;
+    color: var(--gray-600);
+  }
+
+  /* Card layout: category bold top, professional and date smaller below */
+  .care-history-table td:nth-child(1) {
+    font-weight: 700;
+    color: var(--gray-900);
+    font-size: 0.95rem;
+    grid-column: 1;
+  }
+
+  .care-history-table td:nth-child(2) {
+    font-size: 0.82rem;
+    color: var(--gray-600);
+    margin-top: 4px;
+    grid-column: 1;
+  }
+
+  .care-history-table td:nth-child(2)::before {
+    content: "Profissional responsável: ";
+    font-weight: 500;
+    color: var(--gray-700);
+  }
+
+  .care-history-table td:nth-child(3) {
+    font-size: 0.82rem;
+    color: var(--gray-600);
+    grid-column: 1;
+  }
+
+  .care-history-table td:nth-child(3)::before {
+    content: "Data: ";
+    font-weight: 500;
+    color: var(--gray-700);
+  }
+
+  /* Group first 3 cells in a flex column, action cell to the right */
+  .care-history-table tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0 8px;
+    padding: 14px 16px;
+  }
+
+  .care-history-table td:nth-child(1),
+  .care-history-table td:nth-child(2),
+  .care-history-table td:nth-child(3) {
+    grid-column: 1;
+  }
+
+  .care-history-table td:nth-child(4) {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    display: flex;
+    align-items: center;
+  }
+
+  .care-modal-overlay {
+    padding: 16px;
+  }
+
+  .care-modal {
+    padding: 24px 18px;
+    border-radius: 16px;
   }
 
   .care-toast {
     left: 16px;
     right: 16px;
     top: 16px;
+    width: auto;
+    padding: 12px 14px;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .care-page {
+    padding: 14px 12px 20px;
+  }
+
+  .care-tab {
+    padding: 11px 16px;
+    font-size: 0.9rem;
+  }
+
+  .care-back-button,
+  .care-form-group label,
+  .care-side-subtitle,
+  .care-subtitle {
+    font-size: 0.875rem;
+  }
+
+  .care-top-action {
+    padding: 7px 9px;
+    font-size: 0.78rem;
+    gap: 3px;
+  }
+
+  .care-summary-row span,
+  .care-summary-row strong,
+  .care-info-row span,
+  .care-info-row strong,
+  .care-bullet-list,
+  .care-previous-list,
+  .care-empty-copy {
+    font-size: 0.9rem;
+  }
+
+  .care-patient-photo {
+    width: 78px;
+    height: 78px;
+  }
+
+  .care-patient-photo.large {
+    width: 90px;
+    height: 90px;
   }
 }

@@ -493,6 +493,41 @@ export function ClinicalCarePage() {
                 </div>
               </div>
 
+              <div className="care-side-card">
+                <div className="care-side-header">
+                  <Stethoscope size={18} />
+                  <h3>Iougurt Vet</h3>
+                </div>
+
+                {summary && (
+                  <div className="care-side-content">
+                    <div>
+                      <p className="care-side-subtitle">Histórico do paciente</p>
+                      <ul className="care-bullet-list">
+                        <li>Espécie: {summary.species}</li>
+                        <li>Idade: {summary.age}</li>
+                        <li>Peso atual: {summary.weight}</li>
+                        <li>Vacinação: {summary.vaccination}</li>
+                        {summary.lastDiagnosis && <li>Último diagnóstico: {summary.lastDiagnosis}</li>}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="care-side-subtitle">Consultas anteriores</p>
+                      {summary.previousVisits.length > 0 ? (
+                        <ul className="care-previous-list">
+                          {summary.previousVisits.map((item) => (
+                            <li key={item.id}>{item.label}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="care-empty-copy">Ainda não há consultas anteriores finalizadas.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="care-form-group">
                 <label htmlFor="clinical-notes">Queixa principal</label>
                 <textarea
@@ -570,43 +605,6 @@ export function ClinicalCarePage() {
                 />
               </div>
             </div>
-
-            <aside className="care-column-side">
-              <div className="care-side-card">
-                <div className="care-side-header">
-                  <Stethoscope size={18} />
-                  <h3>Iougurt Vet</h3>
-                </div>
-
-                {summary && (
-                  <div className="care-side-content">
-                    <div>
-                      <p className="care-side-subtitle">Histórico do paciente</p>
-                      <ul className="care-bullet-list">
-                        <li>Espécie: {summary.species}</li>
-                        <li>Idade: {summary.age}</li>
-                        <li>Peso atual: {summary.weight}</li>
-                        <li>Vacinação: {summary.vaccination}</li>
-                        {summary.lastDiagnosis && <li>Último diagnóstico: {summary.lastDiagnosis}</li>}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <p className="care-side-subtitle">Consultas anteriores</p>
-                      {summary.previousVisits.length > 0 ? (
-                        <ul className="care-previous-list">
-                          {summary.previousVisits.map((item) => (
-                            <li key={item.id}>{item.label}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="care-empty-copy">Ainda não há consultas anteriores finalizadas.</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </aside>
           </div>
         </section>
       )}
