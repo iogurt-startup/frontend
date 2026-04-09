@@ -18,7 +18,6 @@ import {
   getClinicalRecordPayload,
   type CareFormValues,
 } from '../../lib/clinicalRecordContent'
-import { useAuthStore } from '../../stores/authStore'
 import type {
   ClinicalHistoryItem,
   ClinicalRecord,
@@ -37,10 +36,6 @@ const EMPTY_FORM: CareFormValues = {
   diagnosis: '',
   prescriptions: '',
   additionalObservations: '',
-}
-
-function getMockStorageKey(patientId: string) {
-  return `iougurt-mock-care:${patientId}`
 }
 
 function getAppointmentCategoryLabel(category?: string | null) {
@@ -176,12 +171,10 @@ function buildHistorySummary(patient: Patient, history: ClinicalHistoryItem[], v
 
 export function ClinicalCarePage() {
   const navigate = useNavigate()
-  const user = useAuthStore((state) => state.user)
   const { appointmentId, patientId } = useParams<{
     appointmentId: string
     patientId: string
   }>()
-  const isMockMode = !appointmentId || appointmentId === 'mock'
 
   const [activeTab, setActiveTab] = useState<CareTab>('atendimento')
   const [loading, setLoading] = useState(true)
@@ -213,39 +206,16 @@ export function ClinicalCarePage() {
       setError('')
 
       try {
+        if (!appointmentId) {
+          throw new Error('Agendamento inválido para iniciar o atendimento.')
+        }
+
+        const startedRecord = await clinicalService.startClinicalRecord(appointmentId)
         const [patientData, historyData, vaccinationsData] = await Promise.all([
           clinicalService.getPatient(patientId),
           clinicalService.getPatientHistory(patientId),
           clinicalService.getPatientVaccinations(patientId),
         ])
-
-        let startedRecord: ClinicalRecord
-
-        if (isMockMode) {
-          const savedRecord = window.localStorage.getItem(getMockStorageKey(patientId))
-          startedRecord = savedRecord
-            ? JSON.parse(savedRecord)
-            : {
-                id: `mock-record-${patientId}`,
-                patientId,
-                vetId: user?.id ?? 'mock-vet',
-                appointmentId: null,
-                weightKg: patientData.weightKg ?? null,
-                clinicalNotes: '',
-                diagnosis: null,
-                pendingDiagnosis: null,
-                prescriptions: null,
-                breathingNotes: '',
-                routineGuidance: '',
-                aiSummary: null,
-                finalized: false,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                vet: user ? { id: user.id, name: user.name } : undefined,
-              }
-        } else {
-          startedRecord = await clinicalService.startClinicalRecord(appointmentId)
-        }
 
         if (cancelled) return
 
@@ -286,11 +256,6 @@ export function ClinicalCarePage() {
 
   const visibleHistory = useMemo(() => {
     if (!record) return history
-    if (isMockMode) {
-      return [...history].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      )
-    }
     return history.filter((item) => item.id !== record.id || item.finalized)
   }, [history, record])
 
@@ -321,27 +286,13 @@ export function ClinicalCarePage() {
     try {
       const payload = getClinicalRecordPayload(form)
 
-      const updated = isMockMode
-        ? {
-            ...record,
-            ...payload,
-            updatedAt: new Date().toISOString(),
-          }
-        : await clinicalService.updateClinicalRecord(record.id, payload)
+      const updated = await clinicalService.updateClinicalRecord(record.id, payload)
 
       const nextForm = getCareFormValues(updated)
       setRecord(updated)
       setForm(nextForm)
       setSavedForm(nextForm)
-      if (isMockMode && patientId) {
-        window.localStorage.setItem(getMockStorageKey(patientId), JSON.stringify(updated))
-      }
-      setToast({
-        type: 'success',
-        message: isMockMode
-          ? 'Atendimento salvo localmente em modo mock.'
-          : 'Atendimento salvo com sucesso.',
-      })
+      setToast({ type: 'success', message: 'Atendimento salvo com sucesso.' })
     } catch (err: any) {
       setToast({
         type: 'error',
@@ -363,57 +314,17 @@ export function ClinicalCarePage() {
     try {
       if (isDirty) {
         const payload = getClinicalRecordPayload(form)
-        const updated = isMockMode
-          ? {
-              ...record,
-              ...payload,
-              updatedAt: new Date().toISOString(),
-            }
-          : await clinicalService.updateClinicalRecord(record.id, payload)
+        const updated = await clinicalService.updateClinicalRecord(record.id, payload)
         const nextForm = getCareFormValues(updated)
         setRecord(updated)
         setForm(nextForm)
         setSavedForm(nextForm)
-        if (isMockMode && patientId) {
-          window.localStorage.setItem(getMockStorageKey(patientId), JSON.stringify(updated))
-        }
       }
 
-      const finalizedRecord = isMockMode
-        ? {
-            ...record,
-            ...getClinicalRecordPayload(form),
-            finalized: true,
-            updatedAt: new Date().toISOString(),
-          }
-        : await clinicalService.finalizeClinicalRecord(record.id)
+      const finalizedRecord = await clinicalService.finalizeClinicalRecord(record.id)
       setRecord(finalizedRecord)
-      if (isMockMode) {
-        if (patientId) {
-          window.localStorage.setItem(getMockStorageKey(patientId), JSON.stringify(finalizedRecord))
-        }
-        const mockHistoryItem: ClinicalHistoryItem = {
-          ...finalizedRecord,
-          vet: user ? { id: user.id, name: user.name } : undefined,
-          appointment: {
-            id: `mock-appointment-${patientId}`,
-            category: 'OBSERVATION',
-            dateTime: finalizedRecord.updatedAt,
-          },
-        }
-        setHistory((current) => {
-          const next = current.filter((item) => item.id !== mockHistoryItem.id)
-          return [mockHistoryItem, ...next]
-        })
-      } else {
-        await refreshHistoryData()
-      }
-      setToast({
-        type: 'success',
-        message: isMockMode
-          ? 'Atendimento finalizado localmente em modo mock.'
-          : 'Atendimento finalizado com sucesso.',
-      })
+      await refreshHistoryData()
+      setToast({ type: 'success', message: 'Atendimento finalizado com sucesso.' })
       setActiveTab('prontuario')
     } catch (err: any) {
       setToast({
@@ -429,7 +340,7 @@ export function ClinicalCarePage() {
   }
 
   async function handlePrint() {
-    if (!record?.finalized || isMockMode) return
+    if (!record?.finalized) return
 
     setPrinting(true)
     try {
@@ -495,10 +406,10 @@ export function ClinicalCarePage() {
             className="care-top-action"
             onClick={handlePrint}
             type="button"
-            disabled={!record.finalized || printing || isMockMode}
+            disabled={!record.finalized || printing}
           >
             <Printer size={16} />
-            {isMockMode ? 'Impressão indisponível no mock' : printing ? 'Gerando PDF...' : 'Imprimir'}
+            {printing ? 'Gerando PDF...' : 'Imprimir'}
           </button>
           <button
             className="care-top-action care-top-action-primary"
@@ -547,12 +458,6 @@ export function ClinicalCarePage() {
 
       {activeTab === 'atendimento' && (
         <section className="care-panel">
-          {isMockMode && (
-            <div className="care-mock-banner">
-              Modo mock ativo: esta tela está funcionando sem `appointmentId` real. Os dados do
-              atendimento são salvos localmente no navegador até a integração com agenda/agendamentos.
-            </div>
-          )}
           <div className="care-grid">
             <div className="care-column-main">
               <div className="care-patient-inline">

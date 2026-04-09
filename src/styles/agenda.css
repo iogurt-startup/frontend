@@ -111,9 +111,9 @@
   box-shadow: var(--shadow-sm);
 }
 
-.card-blue   { background-color: #E2F5FA; border: 1px solid #7DD3FC; }
+.card-blue { background-color: #E2F5FA; border: 1px solid #7DD3FC; }
 .card-yellow { background-color: #FEF9C3; border: 1px solid #FDE047; }
-.card-pink   { background-color: #FDF2F8; border: 1px solid #FBCFE8; }
+.card-pink { background-color: #FDF2F8; border: 1px solid #FBCFE8; }
 .card-purple { background-color: #F8F5FF; border: 1px solid #E9D5FF; }
 
 .agenda-card-header {
@@ -172,11 +172,14 @@
 .agenda-mobile-card {
   display: flex;
   align-items: stretch;
+  width: 100%;
+  border: none;
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: box-shadow 0.2s;
+  text-align: left;
 }
 
 .agenda-mobile-card:active {
@@ -192,7 +195,7 @@
   font-weight: 600;
   color: var(--gray-700);
   min-width: 60px;
-  background: rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .agenda-mobile-card-body {
@@ -292,6 +295,70 @@
   opacity: 1;
 }
 
+/* ── Modal de confirmação do atendimento ─────────── */
+.agenda-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 30, 30, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 24px;
+}
+
+.agenda-confirm-modal {
+  width: 100%;
+  max-width: 340px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 28px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.agenda-confirm-icon {
+  width: 34px;
+  height: 34px;
+  color: var(--pink-400);
+  margin: 0 auto 16px;
+}
+
+.agenda-confirm-modal h2 {
+  font-size: 1.9rem;
+  margin-bottom: 12px;
+}
+
+.agenda-confirm-modal p {
+  color: var(--gray-700);
+}
+
+.agenda-confirm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.agenda-confirm-actions button {
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font: inherit;
+}
+
+.agenda-confirm-actions .ghost {
+  background: transparent;
+  color: var(--gray-500);
+}
+
+.agenda-confirm-actions .primary {
+  background: var(--pink-300);
+  color: white;
+}
+
 /* ═══════════════════════════════════════════════════
    Responsivo — Agenda + Modal de agendamento
    ═══════════════════════════════════════════════════ */
@@ -336,6 +403,27 @@
 
   .custom-toast-success span {
     font-size: 0.8125rem;
+  }
+
+  .agenda-confirm-overlay {
+    padding: 16px;
+  }
+
+  .agenda-confirm-modal {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+
+  .agenda-confirm-modal h2 {
+    font-size: 1.4rem;
+  }
+
+  .agenda-confirm-actions {
+    flex-direction: column-reverse;
+  }
+
+  .agenda-confirm-actions button {
+    width: 100%;
   }
 
   /* Modal de agendamento */

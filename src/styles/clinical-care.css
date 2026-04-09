@@ -104,16 +104,6 @@
   padding-top: var(--space-md);
 }
 
-.care-mock-banner {
-  margin-bottom: var(--space-lg);
-  padding: 14px 18px;
-  border-radius: 14px;
-  background: #fff6df;
-  border: 1px solid #f0d38d;
-  color: #8a6a22;
-  line-height: 1.6;
-}
-
 .care-grid {
   align-items: flex-start;
   gap: var(--space-xl);
