@@ -5,9 +5,8 @@ import { useGoogleLogin } from '@react-oauth/google'
 import { authService } from '../../lib/authService'
 import { useAuthStore } from '../../stores/authStore'
 import { PawSvg, FishSvg, BoneSvg, CatFaceSvg } from '../../components/auth/PetDecorations'
+import { isGoogleOAuthConfigured } from '../../lib/googleOAuth'
 import '../../styles/auth.css'
-
-const GOOGLE_ENABLED = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID)
 
 function GoogleIcon() {
   return (
@@ -165,15 +164,28 @@ export function LoginPage() {
             {loading ? <span className="spinner" /> : 'Entrar'}
           </button>
 
-          {GOOGLE_ENABLED && (
-            <>
-              <div className="auth-divider"><span>ou</span></div>
-              <GoogleLoginButton
-                onSuccess={handleGoogleSuccess}
-                onError={() => setError('Login com Google cancelado ou falhou.')}
-                disabled={loading || googleLoading}
-              />
-            </>
+          {/* Google sempre visível; sem Client ID o clique só orienta (SDK não é inicializado). */}
+          <div className="auth-divider"><span>ou</span></div>
+          {isGoogleOAuthConfigured ? (
+            <GoogleLoginButton
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Login com Google cancelado ou falhou.')}
+              disabled={loading || googleLoading}
+            />
+          ) : (
+            <button
+              type="button"
+              className="btn auth-google-btn"
+              disabled={loading || googleLoading}
+              onClick={() =>
+                setError(
+                  'Configure VITE_GOOGLE_CLIENT_ID em frontend/.env e reinicie o npm run dev.',
+                )
+              }
+            >
+              <GoogleIcon />
+              Entrar com Google
+            </button>
           )}
 
           <div className="auth-footer">
