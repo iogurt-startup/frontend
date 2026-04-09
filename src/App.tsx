@@ -12,6 +12,9 @@ import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
 // Dev Pages
 import { TutorDevPage } from './pages/TutorDevPage'
 
+// Patient Pages
+import { PatientEditPage } from './pages/patients/PatientEditPage'
+
 // Layout
 import { AppLayout } from './components/layout/AppLayout'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
@@ -86,6 +89,7 @@ export default function App() {
             <Route path="pacientes" element={<PatientsListPage />} />
             <Route path="pacientes/cadastrar" element={<PatientRegisterPage />} />
             <Route path="pacientes/:id" element={<PatientDetailsPage />} />
+            <Route path="pacientes/:id/editar" element={<PatientEditPage />} />
             <Route path="agenda" element={<AgendaPage />} />
             <Route path="historico" element={<div><div className="page-header"><h1>Histórico</h1></div><p style={{ color: 'var(--color-text-secondary)' }}>Em desenvolvimento...</p></div>} />
           </Route>

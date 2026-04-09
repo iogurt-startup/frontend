@@ -115,7 +115,7 @@ export function PatientDetailsPage() {
       {/* Top Bar Actions */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <button 
-          onClick={() => navigate(-1)} 
+          onClick={() => navigate('/pacientes')} 
           style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: 'transparent', border: 'none', color: 'var(--gray-500)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}
         >
           <ChevronLeft size={18} /> Voltar
@@ -125,7 +125,9 @@ export function PatientDetailsPage() {
           <button style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'transparent', border: 'none', color: 'var(--gray-500)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>
             <Stethoscope size={18} /> Atender
           </button>
-          <button style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'transparent', border: 'none', color: 'var(--gray-500)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>
+          <button 
+            onClick={() => navigate(`/pacientes/${id}/editar`)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'transparent', border: 'none', color: 'var(--gray-500)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>
             <Edit2 size={18} /> Editar dados
           </button>
         </div>
