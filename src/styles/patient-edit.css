@@ -400,32 +400,34 @@
   }
 }
 
-/* Modal Styles */
+
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.4); /* Overlay um pouco mais escuro para foco */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(2px);
 }
 
 .modal-content {
   width: 100%;
-  max-width: 300px;
+  max-width: 450px; /* Largura ajustada conforme as imagens */
   background: #ffffff;
-  border-radius: 12px;
-  padding: 0px 12px 10px;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.16);
+  border-radius: 16px; /* Bordas mais arredondadas */
+  padding: 40px 32px; /* Espaçamento interno generoso */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   text-align: center;
-  animation: modalFadeUp 0.2s ease;
+  animation: modalFadeUp 0.3s ease-out;
+  position: relative;
 }
 
 @keyframes modalFadeUp {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -434,169 +436,137 @@
 }
 
 .modal-icon {
-  width: 150px;
-  height: 150px;
-  margin: 0 auto 50px;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #f5a0cf;
+  border-radius: 12px;
+}
+
+/* Estilo para o ícone de Salvar (Rosa) */
+.modal-icon.save-icon {
+  color: #e6d9df;
+  background-color: #e065a7; /* Fundo suave para o ícone */
+}
+
+/* Estilo para o ícone de Sair (Laranja) */
+.modal-icon.exit-icon,
+.modal-icon.modal-icon-exit {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.modal-icon.modal-icon-exit img {
+  width: 48px;
+  height: 48px;
+  display: block;
 }
 
 .modal-icon svg {
-  width: 140px;
-  height: 140px;
-  stroke-width: 2.9;
+  width: 150px;
+  height: 150px;
+  stroke-width: 3.5;
 }
 
 .modal-title {
-  margin: 0;
-  font-size: 20px;
+  margin: 0 0 12px;
+  font-size: 24px;
   font-weight: 700;
-  line-height: 1.2;
-  color: #2f2f2f;
+  color: #333333;
+  letter-spacing: -0.5px;
 }
 
 .modal-message {
-  margin: 8px 0 16px;
-  font-size: 18px;
+  margin: 0 0 32px;
+  font-size: 16px;
   font-weight: 400;
-  line-height: 1.35;
-  color: #4a4a4a;
+  line-height: 1.5;
+  color: #666666;
 }
 
 .modal-buttons {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0px;
-}
-
-.modal-cancel-btn,
-.modal-confirm-btn {
-  border: none;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  justify-content: flex-end; /* Alinhado à direita conforme as imagens */
+  gap: 24px;
 }
 
 .modal-cancel-btn {
   background: transparent;
-  color: #5e5b5b;
-  padding: 0;
-  min-width: auto;
+  border: none;
+  color: #999;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 12px 16px;
 }
 
 .modal-cancel-btn:hover {
-  color: #585555;
+  color: #666;
 }
 
-.modal-confirm-btn {
-  background: #f470b4;
-  color: #ffffff;
-  min-width: 100px;
-  height: 36px;
-  padding: 0 20px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-confirm-btn:hover:not(:disabled) {
-  background: #f38fc6;
-}
-
-.modal-confirm-btn:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-@media (max-width: 400px) {
-  .modal-content {
-    max-width: 88%;
-    padding: 8px 14px 12px;
-  }
-
-  .modal-title {
-    font-size: 20px;
-  }
-
-  .modal-message {
-    font-size: 12px;
-    margin: 8px 0 14px;
-  }
-
-  .modal-confirm-btn {
-    min-width: 90px;
-    height: 34px;
-  }
-}
-
-@media (max-width: 400px) {
-  .patient-edit-page {
-    padding: 12px;
-  }
-
-  .edit-header {
-    padding-bottom: 12px;
-  }
-
-  .form-grid {
-    gap: 10px;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    padding: 8px 10px;
-    font-size: 0.8rem;
-  }
-
-  .radio-group {
-    gap: 12px;
-  }
-
-  .photo-upload {
-    width: 100px;
-    height: 100px;
-  }
-
-  .section-subtitle {
-    font-size: 0.9rem;
-    margin: 12px 0;
-  }
-}
-
-/* Exit Modal Styles */
-.modal-icon-exit {
-  background: #ffd699 !important;
-  color: #ffb84d !important;
-  font-size: 1.8rem !important;
-  font-weight: 700 !important;
-  line-height: 1 !important;
-}
-
+.modal-confirm-btn,
 .modal-exit-btn {
-  background: #ffb84d;
-  color: #ffffff;
-  min-width: 120px;
-  height: 44px;
-  padding: 0 24px;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   border: none;
+  border-radius: 8px;
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  padding: 12px 32px;
+  min-width: 100px;
+  color: white;
+}
+
+.modal-confirm-btn {
+  background: #f5a3d0;
+}
+
+/* Botão Confirmar para Salvar (Rosa) */
+.modal-confirm-btn.save-btn-modal {
+  background: #f5a3d0;
+}
+
+.modal-confirm-btn.save-btn-modal:hover {
+  background: #f09cc8;
+}
+
+/* Botão Confirmar para Sair (Laranja/Amarelo) */
+.modal-confirm-btn.exit-btn-modal,
+.modal-exit-btn {
+  background: #ffa500;
 }
 
 .modal-exit-btn:hover {
-  background: #ff9f2e;
+  background: #ff9500;
+}
+
+.modal-confirm-btn.exit-btn-modal:hover {
+  background: #fbb650;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 201, 120, 0.3);
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    margin: 0 16px;
+    padding: 32px 24px;
+  }
+  
+  .modal-buttons {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  
+  .modal-confirm-btn {
+    padding: 12px 24px;
+    flex: 1;
+  }
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, Upload } from 'lucide-react'
+import { ChevronLeft, Upload, PawPrint, User } from 'lucide-react'
 import { api } from '../../lib/api'
 import type { Patient } from '../../types'
 import '../../styles/patient-edit.css'
@@ -144,6 +144,31 @@ export function PatientEditPage() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  const formatCPF = (value: string): string => {
+    const numbers = value.replace(/\D/g, '')
+    if (numbers.length <= 3) return numbers
+    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`
+    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}.${numbers.slice(9, 11)}`
+  }
+
+  const formatPhone = (value: string): string => {
+    const numbers = value.replace(/\D/g, '')
+    if (numbers.length <= 2) return numbers
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)})${numbers.slice(2)}`
+    return `(${numbers.slice(0, 2)})${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`
+  }
+
+  const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCPF(e.target.value)
+    setFormData(prev => ({ ...prev, tutorCpf: formatted }))
+  }
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value)
+    setFormData(prev => ({ ...prev, tutorPhone: formatted }))
+  }
+
   const handleRadioChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
@@ -157,12 +182,19 @@ export function PatientEditPage() {
         setPhotoPreview(reader.result as string)
       }
       reader.readAsDataURL(file)
+      // Reset input value to allow selecting the same file again
+      e.target.value = ''
     }
   }
 
   const handleRemovePhoto = () => {
     setPhotoFile(null)
     setPhotoPreview(null)
+    // Reset file input
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    if (fileInput) {
+      fileInput.value = ''
+    }
   }
 
   const handleSaveClick = () => {
@@ -347,15 +379,17 @@ export function PatientEditPage() {
                 )}
               </div>
               <div className="photo-actions">
-                <label className="alter-photo-btn">
+                <label htmlFor="photo-input" className="alter-photo-btn">
                   <Upload size={16} /> Alterar foto
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handlePhotoSelect}
-                    style={{ display: 'none' }}
-                  />
                 </label>
+                <input 
+                  id="photo-input"
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handlePhotoSelect}
+                  style={{ display: 'none' }}
+                  key={`photo-input-${photoPreview ? 'with-preview' : 'no-preview'}`}
+                />
                 {photoPreview && (
                   <button 
                     onClick={handleRemovePhoto}
@@ -543,7 +577,7 @@ export function PatientEditPage() {
                 type="text"
                 name="tutorCpf"
                 value={formData.tutorCpf}
-                onChange={handleInputChange}
+                onChange={handleCPFChange}
                 placeholder="123.456.789.10"
               />
             </div>
@@ -554,7 +588,7 @@ export function PatientEditPage() {
                 type="tel"
                 name="tutorPhone"
                 value={formData.tutorPhone}
-                onChange={handleInputChange}
+                onChange={handlePhoneChange}
                 placeholder="(61)12345-6789"
               />
             </div>
@@ -669,7 +703,9 @@ export function PatientEditPage() {
       {showConfirmModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <div className="modal-icon">💾</div>
+            <div className="modal-icon">
+              <img src="/images/Icons_save.png" alt="Salvar" />
+            </div>
             <h2 className="modal-title">Salvar alterações</h2>
             <p className="modal-message">Deseja salvar as alterações que realizou?</p>
             <div className="modal-buttons">
@@ -695,7 +731,9 @@ export function PatientEditPage() {
       {showExitModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <div className="modal-icon modal-icon-exit">?</div>
+            <div className="modal-icon modal-icon-exit">
+              <img src="/images/Icons_question.png" alt="Deseja sair?" />
+            </div>
             <h2 className="modal-title">Deseja sair ?</h2>
             <p className="modal-message">Você não salvou as alterações que realizou, deseja sair mesmo assim?</p>
             <div className="modal-buttons">
