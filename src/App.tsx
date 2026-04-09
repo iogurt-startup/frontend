@@ -1,10 +1,16 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
 
+// Landing
+import { LandingPage } from './pages/LandingPage'
+
 // Auth pages
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
+
+// Dev Pages
+import { TutorDevPage } from './pages/TutorDevPage'
 
 // Layout
 import { AppLayout } from './components/layout/AppLayout'
@@ -22,7 +28,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user)
 
   if (isAuthenticated) {
-    return <Navigate to={user?.role === 'TUTOR' ? '/portal' : '/'} replace />
+    return <Navigate to={user?.role === 'TUTOR' ? '/portal' : '/dashboard'} replace />
   }
   return <>{children}</>
 }
@@ -31,6 +37,16 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Landing */}
+        <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <LandingPage />
+            </PublicRoute>
+          }
+        />
+
         {/* Auth (public) */}
         <Route
           path="/login"
@@ -57,10 +73,16 @@ export default function App() {
           }
         />
 
+        {/* Tutor Dev Page */}
+        <Route
+          path="/tutor-portal"
+          element={<TutorDevPage />}
+        />
+
         {/* Protected: OWNER + VET */}
         <Route element={<ProtectedRoute allowedRoles={['OWNER', 'VET']} />}>
           <Route element={<AppLayout />}>
-            <Route index element={<HomePage />} />
+            <Route path="/dashboard" element={<HomePage />} />
             <Route path="pacientes" element={<PatientsListPage />} />
             <Route path="pacientes/cadastrar" element={<PatientRegisterPage />} />
             <Route path="pacientes/:id" element={<PatientDetailsPage />} />

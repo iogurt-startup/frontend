@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { useGoogleLogin } from '@react-oauth/google'
 import { authService } from '../../lib/authService'
 import { useAuthStore } from '../../stores/authStore'
@@ -107,6 +107,16 @@ export function LoginPage() {
       <PawSvg className="auth-deco auth-deco-paw2" />
 
       <div className="auth-card">
+        <button
+          type="button"
+          className="auth-back-btn"
+          onClick={() => navigate('/')}
+          aria-label="Voltar para a página inicial"
+          title="Voltar"
+        >
+          <ArrowLeft size={20} />
+        </button>
+
         <div className="auth-logo">
           <span className="auth-logo-text">
             <CatFaceSvg />
