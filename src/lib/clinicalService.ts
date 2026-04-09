@@ -7,10 +7,24 @@ import type {
   Vaccination,
 } from '../types'
 
+const inFlightClinicalRecordStarts = new Map<string, Promise<ClinicalRecord>>()
+
 export const clinicalService = {
   async startClinicalRecord(appointmentId: string): Promise<ClinicalRecord> {
-    const response = await api.post<ClinicalRecord>('/clinical-records', { appointmentId })
-    return response.data
+    const existingRequest = inFlightClinicalRecordStarts.get(appointmentId)
+    if (existingRequest) return existingRequest
+
+    // Deduplicate concurrent starts for the same appointment.
+    // This avoids creating the same clinical record twice in React StrictMode/dev remounts.
+    const request = api
+      .post<ClinicalRecord>('/clinical-records', { appointmentId })
+      .then((response) => response.data)
+      .finally(() => {
+        inFlightClinicalRecordStarts.delete(appointmentId)
+      })
+
+    inFlightClinicalRecordStarts.set(appointmentId, request)
+    return request
   },
 
   async updateClinicalRecord(
