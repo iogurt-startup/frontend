@@ -1,11 +1,26 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ClipboardPlus } from 'lucide-react'
 import { ScheduleModal } from '../../components/scheduling/ScheduleModal'
 import { useAgendaStore } from '../../stores/useAgendaStore'
+import type { Appointment } from '../../types'
 import '../../styles/agenda.css'
 
 const START_HOUR = 7
 const END_HOUR = 18
-const ROW_HEIGHT_PX = 140
+const ROW_DESKTOP = 140
+const ROW_MOBILE = 80
+
+const mq = window.matchMedia('(max-width: 768px)')
+
+function subscribeMQ(cb: () => void) {
+  mq.addEventListener('change', cb)
+  return () => mq.removeEventListener('change', cb)
+}
+
+function useIsMobile() {
+  return useSyncExternalStore(subscribeMQ, () => mq.matches)
+}
 
 const HOURS_GRID = Array.from(
   { length: (END_HOUR - START_HOUR) * 2 },
@@ -35,6 +50,11 @@ function getGridIndex(dateTime: string): number {
   return (d.getHours() - START_HOUR) * 2 + (d.getMinutes() >= 30 ? 1 : 0)
 }
 
+function formatTime(dateTime: string): string {
+  const d = new Date(dateTime)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
 function formatDateBR(isoDate: string): string {
   const [y, m, d] = isoDate.split('-')
   return `${d}/${m}/${y}`
@@ -49,9 +69,54 @@ function shiftDate(isoDate: string, days: number): string {
   return `${year}-${month}-${day}`
 }
 
+function MobileCardList({
+  appointments,
+  onSelect,
+}: {
+  appointments: Appointment[]
+  onSelect: (appointment: Appointment) => void
+}) {
+  const sorted = [...appointments].sort(
+    (a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
+  )
+
+  if (sorted.length === 0) {
+    return <div className="agenda-mobile-empty">Nenhum agendamento para este dia.</div>
+  }
+
+  return (
+    <div className="agenda-mobile-list">
+      {sorted.map((appt) => {
+        const color = CATEGORY_COLORS[appt.category] ?? 'blue'
+        return (
+          <button
+            key={appt.id}
+            type="button"
+            className={`agenda-mobile-card card-${color}`}
+            onClick={() => onSelect(appt)}
+          >
+            <div className="agenda-mobile-card-time">{formatTime(appt.dateTime)}</div>
+            <div className="agenda-mobile-card-body">
+              <span className="agenda-mobile-card-pet">{appt.patient?.name ?? 'Paciente'}</span>
+              <span className="agenda-mobile-card-info">
+                {CATEGORY_LABELS[appt.category] ?? appt.category}
+                {appt.vet?.name ? ` · ${appt.vet.name}` : ''}
+              </span>
+            </div>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export function AgendaPage() {
+  const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showToast, setShowToast] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
+  const isMobile = useIsMobile()
+  const rowH = isMobile ? ROW_MOBILE : ROW_DESKTOP
 
   const { selectedDate, appointments, isLoading, setDate, fetchAppointments } =
     useAgendaStore()
@@ -65,10 +130,16 @@ export function AgendaPage() {
     setTimeout(() => setShowToast(false), 4000)
   }
 
+  const handleStartCare = () => {
+    if (!selectedAppointment) return
+
+    navigate(`/atendimentos/${selectedAppointment.id}/pacientes/${selectedAppointment.patientId}`)
+  }
+
   return (
     <div className="agenda-container">
       <div className="agenda-header">
-        <h1>Agenda</h1>
+        <h1>Agendamentos</h1>
 
         <div className="agenda-controls">
           <div className="agenda-date-picker">
@@ -87,90 +158,86 @@ export function AgendaPage() {
             </span>
           </div>
 
-          <button
-            className="btn-agendar-header"
-            onClick={() => setIsModalOpen(true)}
-          >
+          <button className="btn-agendar-header" onClick={() => setIsModalOpen(true)}>
             + Agendar
           </button>
         </div>
       </div>
 
-      <div className="agenda-schedule-container">
-        {isLoading && (
-          <div style={{ textAlign: 'center', padding: '1rem', color: '#888' }}>
-            Carregando agendamentos…
-          </div>
-        )}
-
-        {HOURS_GRID.map((hour) => (
-          <div
-            key={hour}
-            className="agenda-grid-row"
-            style={{ height: `${ROW_HEIGHT_PX}px` }}
-          >
-            <span className="agenda-time">{hour}</span>
-            <div className="agenda-line"></div>
-          </div>
-        ))}
-
-        <div className="agenda-events">
-          {appointments.map((appt) => {
-            const startIdx = getGridIndex(appt.dateTime)
-            if (startIdx < 0 || startIdx >= HOURS_GRID.length) return null
-            const color = CATEGORY_COLORS[appt.category] ?? 'blue'
-
-            return (
-              <div
-                key={appt.id}
-                className={`agenda-card card-${color}`}
-                style={{
-                  top: `${startIdx * ROW_HEIGHT_PX + 4}px`,
-                  height: `${ROW_HEIGHT_PX - 8}px`,
-                }}
-              >
-                <div className="agenda-card-header">
-                  {appt.patient?.photoUrl ? (
-                    <img
-                      src={appt.patient.photoUrl}
-                      alt={appt.patient?.name}
-                      className="pet-avatar"
-                    />
-                  ) : (
-                    <div className="pet-avatar pet-avatar-placeholder">
-                      {appt.patient?.name?.charAt(0) ?? '?'}
-                    </div>
-                  )}
-                  <span className="pet-name">
-                    {appt.patient?.name ?? 'Paciente'}
-                  </span>
-                </div>
-
-                <div className="agenda-card-details">
-                  <div className="detail-line">
-                    <span className="detail-label">Atendimento:</span>
-                    <span className="detail-value">
-                      {CATEGORY_LABELS[appt.category] ?? appt.category}
-                    </span>
-                  </div>
-                  <div className="detail-line">
-                    <span className="detail-label">Veterinário:</span>
-                    <span className="detail-value">
-                      {appt.vet?.name ?? '—'}
-                    </span>
-                  </div>
-                  <div className="detail-line">
-                    <span className="detail-label">Espécie:</span>
-                    <span className="detail-value">
-                      {appt.patient?.species ?? '—'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
+      {isLoading && (
+        <div style={{ textAlign: 'center', padding: '1rem', color: '#888' }}>
+          Carregando agendamentos…
         </div>
-      </div>
+      )}
+
+      {isMobile ? (
+        <MobileCardList appointments={appointments} onSelect={setSelectedAppointment} />
+      ) : (
+        <div className="agenda-schedule-container">
+          {HOURS_GRID.map((hour) => (
+            <div
+              key={hour}
+              className="agenda-grid-row"
+              style={{ height: `${rowH}px` }}
+            >
+              <span className="agenda-time">{hour}</span>
+              <div className="agenda-line"></div>
+            </div>
+          ))}
+
+          <div className="agenda-events">
+            {appointments.map((appt) => {
+              const startIdx = getGridIndex(appt.dateTime)
+              if (startIdx < 0 || startIdx >= HOURS_GRID.length) return null
+              const color = CATEGORY_COLORS[appt.category] ?? 'blue'
+
+              return (
+                <div
+                  key={appt.id}
+                  className={`agenda-card card-${color}`}
+                  style={{
+                    top: `${startIdx * rowH + 4}px`,
+                    height: `${rowH - 8}px`,
+                  }}
+                  onClick={() => setSelectedAppointment(appt)}
+                >
+                  <div className="agenda-card-header">
+                    {appt.patient?.photoUrl ? (
+                      <img
+                        src={appt.patient.photoUrl}
+                        alt={appt.patient?.name}
+                        className="pet-avatar"
+                      />
+                    ) : (
+                      <div className="pet-avatar pet-avatar-placeholder">
+                        {appt.patient?.name?.charAt(0) ?? '?'}
+                      </div>
+                    )}
+                    <span className="pet-name">{appt.patient?.name ?? 'Paciente'}</span>
+                  </div>
+
+                  <div className="agenda-card-details">
+                    <div className="detail-line">
+                      <span className="detail-label">Atendimento:</span>
+                      <span className="detail-value">
+                        {CATEGORY_LABELS[appt.category] ?? appt.category}
+                      </span>
+                    </div>
+                    <div className="detail-line">
+                      <span className="detail-label">Veterinário:</span>
+                      <span className="detail-value">{appt.vet?.name ?? '—'}</span>
+                    </div>
+                    <div className="detail-line">
+                      <span className="detail-label">Espécie:</span>
+                      <span className="detail-value">{appt.patient?.species ?? '—'}</span>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {showToast && (
         <div className="custom-toast-success">
@@ -194,10 +261,7 @@ export function AgendaPage() {
             </div>
             <span>Agendamento realizado com sucesso</span>
           </div>
-          <button
-            className="toast-close-btn"
-            onClick={() => setShowToast(false)}
-          >
+          <button className="toast-close-btn" onClick={() => setShowToast(false)}>
             <svg
               width="16"
               height="16"
@@ -220,6 +284,29 @@ export function AgendaPage() {
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleSuccess}
       />
+
+      {selectedAppointment && (
+        <div className="agenda-confirm-overlay" role="presentation">
+          <div className="agenda-confirm-modal">
+            <ClipboardPlus className="agenda-confirm-icon" />
+            <h2>Realizar atendimento</h2>
+            <p>Deseja iniciar um atendimento?</p>
+
+            <div className="agenda-confirm-actions">
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => setSelectedAppointment(null)}
+              >
+                Cancelar
+              </button>
+              <button type="button" className="primary" onClick={handleStartCare}>
+                Atender
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

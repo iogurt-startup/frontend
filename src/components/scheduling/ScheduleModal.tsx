@@ -134,8 +134,11 @@ export function ScheduleModal({ isOpen, onClose, onSuccess }: ScheduleModalProps
   }))
 
   return (
-    <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay schedule-modal-overlay" onClick={handleClose}>
+      <div
+        className="modal-content schedule-modal-content"
+        onClick={(e) => e.stopPropagation()}
+      >
 
         <div className="modal-header">
           <svg
