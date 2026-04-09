@@ -134,6 +134,32 @@
   align-items: center;
 }
 
+/* ── Back Button ──────────────────────────────────── */
+.auth-back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.auth-back-btn:hover {
+  background-color: rgba(255, 105, 180, 0.1);
+  color: var(--color-primary);
+}
+
+.auth-back-btn:active {
+  transform: scale(0.95);
+}
+
 /* ── Logo ─────────────────────────────────────────── */
 .auth-logo {
   margin-bottom: var(--space-2xl);
