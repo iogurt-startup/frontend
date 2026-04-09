@@ -12,11 +12,11 @@ const navItems = [
 ]
 
 interface SidebarProps {
-  className?: string
-  onNavClick?: () => void
+  mobileOpen?: boolean
+  onClose?: () => void
 }
 
-export function Sidebar({ className, onNavClick }: SidebarProps) {
+export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
 
@@ -27,12 +27,15 @@ export function Sidebar({ className, onNavClick }: SidebarProps) {
       // Even if API call fails, clear local state
     } finally {
       logout()
+      onClose?.()
       navigate('/login')
     }
   }
 
   const displayName = user?.name || 'Rafael Rocha'
-  const displayAvatar = user?.avatarUrl || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&h=100&fit=crop'
+  const displayAvatar =
+    user?.avatarUrl ||
+    'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&h=100&fit=crop'
 
   const initials = displayName
     ?.split(' ')
@@ -42,45 +45,48 @@ export function Sidebar({ className, onNavClick }: SidebarProps) {
     .toUpperCase()
 
   return (
-    <aside className={['sidebar', className].filter(Boolean).join(' ')}>
-      <div className="sidebar-logo">
-        <span className="sidebar-logo-text">iougurt</span>
-      </div>
+    <>
+      <button
+        type="button"
+        className={`sidebar-backdrop${mobileOpen ? ' visible' : ''}`}
+        aria-label="Fechar menu lateral"
+        onClick={onClose}
+      />
 
-      <nav className="sidebar-nav">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `sidebar-link${isActive ? ' active' : ''}`
-            }
-            end={item.to === '/'}
-            onClick={onNavClick}
-          >
-            <item.icon />
-            {item.label}
-          </NavLink>
-        ))}
-      </nav>
-
-      <div className="sidebar-footer">
-        <div className="sidebar-user">
-          <div className="sidebar-avatar">
-            {displayAvatar ? (
-              <img src={displayAvatar} alt={displayName} />
-            ) : (
-              initials
-            )}
-          </div>
-          <span className="sidebar-username">{displayName}</span>
+      <aside className={`sidebar${mobileOpen ? ' mobile-open' : ''}`}>
+        <div className="sidebar-logo">
+          <span className="sidebar-logo-text">iougurt</span>
         </div>
 
-        <button className="sidebar-logout" onClick={handleLogout}>
-          <LogOut />
-          Sair
-        </button>
-      </div>
-    </aside>
+        <nav className="sidebar-nav">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
+              end={item.to === '/'}
+              onClick={onClose}
+            >
+              <item.icon />
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="sidebar-user">
+            <div className="sidebar-avatar">
+              {displayAvatar ? <img src={displayAvatar} alt={displayName} /> : initials}
+            </div>
+            <span className="sidebar-username">{displayName}</span>
+          </div>
+
+          <button className="sidebar-logout" onClick={handleLogout}>
+            <LogOut />
+            Sair
+          </button>
+        </div>
+      </aside>
+    </>
   )
 }
