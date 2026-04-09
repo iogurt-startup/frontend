@@ -121,10 +121,12 @@
 
 .care-column-main {
   flex: 1.2;
+  min-width: 0;
 }
 
 .care-column-side {
   flex: 0.9;
+  min-width: 320px;
 }
 
 .care-patient-inline {
@@ -206,6 +208,19 @@
   color: var(--color-text);
   outline: none;
   transition: border-color var(--transition-fast);
+}
+
+.care-panel .care-column-main {
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  padding-right: 14px;
+}
+
+.care-panel .care-column-side .care-side-card {
+  position: sticky;
+  top: 0;
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
 }
 
 .care-form-group textarea:focus {
@@ -312,8 +327,9 @@
 .care-history-action {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border-radius: 10px;
 }
 
@@ -495,6 +511,17 @@
 
   .care-info-grid.two-columns {
     grid-template-columns: 1fr;
+  }
+
+  .care-column-side {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .care-panel .care-column-main,
+  .care-panel .care-column-side .care-side-card {
+    max-height: none;
+    overflow: visible;
   }
 }
 

@@ -4,7 +4,6 @@ import {
   AlertCircle,
   ArrowLeft,
   CheckCircle2,
-  ClipboardList,
   FileText,
   LoaderCircle,
   PawPrint,
@@ -14,6 +13,11 @@ import {
   UserRound,
 } from 'lucide-react'
 import { clinicalService } from '../../lib/clinicalService'
+import {
+  getCareFormValues,
+  getClinicalRecordPayload,
+  type CareFormValues,
+} from '../../lib/clinicalRecordContent'
 import { useAuthStore } from '../../stores/authStore'
 import type {
   ClinicalHistoryItem,
@@ -25,16 +29,14 @@ import '../../styles/clinical-care.css'
 
 type CareTab = 'atendimento' | 'dados' | 'prontuario'
 
-interface CareFormState {
-  clinicalNotes: string
-  breathingNotes: string
-  routineGuidance: string
-}
-
-const EMPTY_FORM: CareFormState = {
+const EMPTY_FORM: CareFormValues = {
   clinicalNotes: '',
   breathingNotes: '',
-  routineGuidance: '',
+  observations: '',
+  examRequests: '',
+  diagnosis: '',
+  prescriptions: '',
+  additionalObservations: '',
 }
 
 function getMockStorageKey(patientId: string) {
@@ -61,16 +63,6 @@ function formatDate(value?: string | Date | null) {
   const parsed = new Date(value)
   if (Number.isNaN(parsed.getTime())) return '—'
   return parsed.toLocaleDateString('pt-BR')
-}
-
-function formatDateTime(value?: string | Date | null) {
-  if (!value) return '—'
-  const parsed = new Date(value)
-  if (Number.isNaN(parsed.getTime())) return '—'
-  return parsed.toLocaleString('pt-BR', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  })
 }
 
 function calculateAge(birthDate?: string | null) {
@@ -151,14 +143,6 @@ function extractAddress(addressStr?: string | null) {
   return raw
 }
 
-function toFormState(record: ClinicalRecord): CareFormState {
-  return {
-    clinicalNotes: record.clinicalNotes ?? '',
-    breathingNotes: record.breathingNotes ?? '',
-    routineGuidance: record.routineGuidance ?? '',
-  }
-}
-
 function buildHistorySummary(patient: Patient, history: ClinicalHistoryItem[], vaccinations: Vaccination[]) {
   const nextPending = vaccinations
     .filter((item) => item.status === 'PENDING' && item.nextDoseAt)
@@ -209,11 +193,10 @@ export function ClinicalCarePage() {
   const [record, setRecord] = useState<ClinicalRecord | null>(null)
   const [history, setHistory] = useState<ClinicalHistoryItem[]>([])
   const [vaccinations, setVaccinations] = useState<Vaccination[]>([])
-  const [form, setForm] = useState<CareFormState>(EMPTY_FORM)
-  const [savedForm, setSavedForm] = useState<CareFormState>(EMPTY_FORM)
+  const [form, setForm] = useState<CareFormValues>(EMPTY_FORM)
+  const [savedForm, setSavedForm] = useState<CareFormValues>(EMPTY_FORM)
   const [showFinalizeModal, setShowFinalizeModal] = useState(false)
   const [showExitModal, setShowExitModal] = useState(false)
-  const [selectedHistory, setSelectedHistory] = useState<ClinicalHistoryItem | null>(null)
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   useEffect(() => {
@@ -266,7 +249,7 @@ export function ClinicalCarePage() {
 
         if (cancelled) return
 
-        const nextForm = toFormState(startedRecord)
+        const nextForm = getCareFormValues(startedRecord)
         setRecord(startedRecord)
         setPatient(patientData)
         setHistory(historyData)
@@ -326,7 +309,7 @@ export function ClinicalCarePage() {
     setVaccinations(vaccinationsData)
   }
 
-  function handleFieldChange(field: keyof CareFormState, value: string) {
+  function handleFieldChange(field: keyof CareFormValues, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
   }
 
@@ -336,11 +319,7 @@ export function ClinicalCarePage() {
     setError('')
 
     try {
-      const payload = {
-        clinicalNotes: form.clinicalNotes.trim(),
-        breathingNotes: form.breathingNotes.trim(),
-        routineGuidance: form.routineGuidance.trim(),
-      }
+      const payload = getClinicalRecordPayload(form)
 
       const updated = isMockMode
         ? {
@@ -350,7 +329,7 @@ export function ClinicalCarePage() {
           }
         : await clinicalService.updateClinicalRecord(record.id, payload)
 
-      const nextForm = toFormState(updated)
+      const nextForm = getCareFormValues(updated)
       setRecord(updated)
       setForm(nextForm)
       setSavedForm(nextForm)
@@ -383,20 +362,15 @@ export function ClinicalCarePage() {
 
     try {
       if (isDirty) {
+        const payload = getClinicalRecordPayload(form)
         const updated = isMockMode
           ? {
               ...record,
-              clinicalNotes: form.clinicalNotes.trim(),
-              breathingNotes: form.breathingNotes.trim(),
-              routineGuidance: form.routineGuidance.trim(),
+              ...payload,
               updatedAt: new Date().toISOString(),
             }
-          : await clinicalService.updateClinicalRecord(record.id, {
-              clinicalNotes: form.clinicalNotes.trim(),
-              breathingNotes: form.breathingNotes.trim(),
-              routineGuidance: form.routineGuidance.trim(),
-            })
-        const nextForm = toFormState(updated)
+          : await clinicalService.updateClinicalRecord(record.id, payload)
+        const nextForm = getCareFormValues(updated)
         setRecord(updated)
         setForm(nextForm)
         setSavedForm(nextForm)
@@ -408,7 +382,7 @@ export function ClinicalCarePage() {
       const finalizedRecord = isMockMode
         ? {
             ...record,
-            ...form,
+            ...getClinicalRecordPayload(form),
             finalized: true,
             updatedAt: new Date().toISOString(),
           }
@@ -640,9 +614,53 @@ export function ClinicalCarePage() {
                 <label htmlFor="care-observations">Observações</label>
                 <textarea
                   id="care-observations"
-                  value={form.routineGuidance}
-                  onChange={(event) => handleFieldChange('routineGuidance', event.target.value)}
-                  placeholder="Adicione observações gerais do atendimento"
+                  value={form.observations}
+                  onChange={(event) => handleFieldChange('observations', event.target.value)}
+                  placeholder="Escreva uma observação se necessário"
+                  disabled={record.finalized}
+                />
+              </div>
+
+              <div className="care-form-group">
+                <label htmlFor="care-exam-requests">Pedidos de exame</label>
+                <textarea
+                  id="care-exam-requests"
+                  value={form.examRequests}
+                  onChange={(event) => handleFieldChange('examRequests', event.target.value)}
+                  placeholder="Escreva uma observação se necessário"
+                  disabled={record.finalized}
+                />
+              </div>
+
+              <div className="care-form-group">
+                <label htmlFor="care-diagnosis">Diagnóstico provisório / definitivo</label>
+                <textarea
+                  id="care-diagnosis"
+                  value={form.diagnosis}
+                  onChange={(event) => handleFieldChange('diagnosis', event.target.value)}
+                  placeholder="Escreva uma observação se necessário"
+                  disabled={record.finalized}
+                />
+              </div>
+
+              <div className="care-form-group">
+                <label htmlFor="care-prescriptions">Medicação / Prescrição</label>
+                <textarea
+                  id="care-prescriptions"
+                  value={form.prescriptions}
+                  onChange={(event) => handleFieldChange('prescriptions', event.target.value)}
+                  placeholder="Escreva uma observação se necessário"
+                  disabled={record.finalized}
+                />
+              </div>
+
+              <div className="care-form-group">
+                <label htmlFor="care-additional-observations">Observações adicionais</label>
+                <textarea
+                  id="care-additional-observations"
+                  value={form.additionalObservations}
+                  onChange={(event) => handleFieldChange('additionalObservations', event.target.value)}
+                  placeholder="Escreva uma observação se necessário"
                   disabled={record.finalized}
                 />
               </div>
@@ -763,17 +781,16 @@ export function ClinicalCarePage() {
                       <td>{getAppointmentCategoryLabel(item.appointment?.category)}</td>
                       <td>{item.vet?.name || 'Não informado'}</td>
                       <td>{formatDate(item.appointment?.dateTime ?? item.createdAt)}</td>
-                      <td>
-                        <button
-                          className="care-history-action"
-                          onClick={() => setSelectedHistory(item)}
-                          type="button"
-                        >
-                          <ClipboardList size={16} />
-                          Ver
-                        </button>
-                      </td>
-                    </tr>
+                        <td>
+                          <button
+                            className="care-history-action"
+                            onClick={() => navigate(`/historico/${item.id}/pacientes/${patient.id}`)}
+                            type="button"
+                          >
+                            <FileText size={16} />
+                          </button>
+                        </td>
+                      </tr>
                   ))
                 ) : (
                   <tr>
@@ -831,46 +848,6 @@ export function ClinicalCarePage() {
         </div>
       )}
 
-      {selectedHistory && (
-        <div className="care-modal-overlay" role="presentation">
-          <div className="care-history-modal">
-            <div className="care-history-modal-header">
-              <div>
-                <h3>
-                  Atendimento {formatDateTime(selectedHistory.appointment?.dateTime ?? selectedHistory.createdAt)}
-                </h3>
-                <p>{getAppointmentCategoryLabel(selectedHistory.appointment?.category)}</p>
-              </div>
-              <button type="button" onClick={() => setSelectedHistory(null)}>
-                Fechar
-              </button>
-            </div>
-
-            <div className="care-history-modal-content">
-              <div className="care-history-block">
-                <span>Queixa principal</span>
-                <strong>{selectedHistory.clinicalNotes || '—'}</strong>
-              </div>
-              <div className="care-history-block">
-                <span>Exame físico</span>
-                <strong>{selectedHistory.breathingNotes || '—'}</strong>
-              </div>
-              <div className="care-history-block">
-                <span>Observações</span>
-                <strong>{selectedHistory.routineGuidance || '—'}</strong>
-              </div>
-              <div className="care-history-block">
-                <span>Diagnóstico</span>
-                <strong>{selectedHistory.diagnosis || selectedHistory.pendingDiagnosis || '—'}</strong>
-              </div>
-              <div className="care-history-block">
-                <span>Prescrições</span>
-                <strong>{selectedHistory.prescriptions || '—'}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

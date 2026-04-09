@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Download, LoaderCircle, Printer } from 'lucide-react'
+import { ArrowLeft, LoaderCircle, Printer, Share2 } from 'lucide-react'
+import { parseRoutineGuidance } from '../../lib/clinicalRecordContent'
 import { historyService } from '../../lib/historyService'
 import type { ClinicalHistoryItem, Patient } from '../../types'
 import '../../styles/history.css'
@@ -28,6 +29,8 @@ function downloadTextFile(fileName: string, content: string) {
 }
 
 function buildExportContent(patient: Patient, record: ClinicalHistoryItem) {
+  const routineGuidance = parseRoutineGuidance(record.routineGuidance)
+
   return [
     `Atendimento - ${formatDateTime(record.appointment?.dateTime ?? record.createdAt)}`,
     '',
@@ -39,16 +42,19 @@ function buildExportContent(patient: Patient, record: ClinicalHistoryItem) {
     record.breathingNotes ?? '—',
     '',
     'Observações:',
-    record.routineGuidance ?? '—',
+    routineGuidance.observations || '—',
+    '',
+    'Pedidos de exame:',
+    record.pendingDiagnosis ?? '—',
     '',
     'Diagnóstico provisório / definitivo:',
-    record.diagnosis ?? record.pendingDiagnosis ?? '—',
+    record.diagnosis ?? '—',
     '',
     'Medicação / Prescrição:',
     record.prescriptions ?? '—',
     '',
-    'Resumo de IA:',
-    record.aiSummary ?? '—',
+    'Observações adicionais:',
+    routineGuidance.additionalObservations || '—',
   ].join('\n')
 }
 
@@ -115,6 +121,11 @@ export function HistoryDetailsPage() {
     return buildExportContent(patient, record)
   }, [patient, record])
 
+  const routineGuidance = useMemo(
+    () => (record ? parseRoutineGuidance(record.routineGuidance) : { observations: '', additionalObservations: '' }),
+    [record],
+  )
+
   if (loading) {
     return (
       <div className="history-detail-state">
@@ -149,7 +160,7 @@ export function HistoryDetailsPage() {
               )
             }
           >
-            <Download size={16} />
+            <Share2 size={16} />
             Exportar
           </button>
         </div>
@@ -162,13 +173,11 @@ export function HistoryDetailsPage() {
 
         <InfoBlock title="Queixa principal:" content={record.clinicalNotes} />
         <InfoBlock title="Exame físico:" content={record.breathingNotes} />
-        <InfoBlock title="Observações:" content={record.routineGuidance} />
-        <InfoBlock
-          title="Diagnóstico provisório / definitivo:"
-          content={record.diagnosis ?? record.pendingDiagnosis}
-        />
+        <InfoBlock title="Observações:" content={routineGuidance.observations} />
+        <InfoBlock title="Pedidos de exame:" content={record.pendingDiagnosis} />
+        <InfoBlock title="Diagnóstico provisório / definitivo:" content={record.diagnosis} />
         <InfoBlock title="Medicação / Prescrição:" content={record.prescriptions} />
-        <InfoBlock title="Resumo gerado por IA:" content={record.aiSummary} />
+        <InfoBlock title="Observações adicionais:" content={routineGuidance.additionalObservations} />
       </div>
     </div>
   )
