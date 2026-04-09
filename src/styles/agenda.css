@@ -57,7 +57,7 @@
   color: var(--color-primary);
 }
 
-/* Grid Layout */
+/* ── Desktop: Time Grid ──────────────────────────── */
 .agenda-schedule-container {
   position: relative;
   margin-top: var(--space-lg);
@@ -81,7 +81,6 @@
   border-top: 1px solid var(--gray-200);
 }
 
-/* Events Overlay */
 .agenda-events {
   position: absolute;
   top: 0;
@@ -103,6 +102,7 @@
   gap: 8px;
   pointer-events: auto;
   cursor: pointer;
+  overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -111,27 +111,11 @@
   box-shadow: var(--shadow-sm);
 }
 
-.card-blue {
-  background-color: #E2F5FA;
-  border: 1px solid #7DD3FC;
-}
+.card-blue   { background-color: #E2F5FA; border: 1px solid #7DD3FC; }
+.card-yellow { background-color: #FEF9C3; border: 1px solid #FDE047; }
+.card-pink   { background-color: #FDF2F8; border: 1px solid #FBCFE8; }
+.card-purple { background-color: #F8F5FF; border: 1px solid #E9D5FF; }
 
-.card-yellow {
-  background-color: #FEF9C3;
-  border: 1px solid #FDE047;
-}
-
-.card-pink {
-  background-color: #FDF2F8;
-  border: 1px solid #FBCFE8;
-}
-
-.card-purple {
-  background-color: #F8F5FF;
-  border: 1px solid #E9D5FF;
-}
-
-/* Card Content */
 .agenda-card-header {
   display: flex;
   align-items: center;
@@ -147,10 +131,23 @@
   background-color: white;
 }
 
+.pet-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  background: var(--gray-100);
+}
+
 .pet-name {
   font-weight: 600;
   color: var(--gray-900);
   font-size: 0.9375rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .agenda-card-details {
@@ -160,20 +157,78 @@
   font-size: 0.8125rem;
 }
 
-.detail-line {
+.detail-line { display: flex; gap: 4px; }
+.detail-label { color: var(--gray-500); }
+.detail-value { color: var(--gray-800); }
+
+/* ── Mobile: Card List ───────────────────────────── */
+.agenda-mobile-list {
   display: flex;
-  gap: 4px;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-top: var(--space-sm);
 }
 
-.detail-label {
+.agenda-mobile-card {
+  display: flex;
+  align-items: stretch;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.agenda-mobile-card:active {
+  box-shadow: var(--shadow-md);
+}
+
+.agenda-mobile-card-time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  min-width: 60px;
+  background: rgba(255,255,255,0.5);
+}
+
+.agenda-mobile-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--space-md);
+}
+
+.agenda-mobile-card-pet {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agenda-mobile-card-info {
+  font-size: 0.75rem;
+  color: var(--gray-600);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agenda-mobile-empty {
+  text-align: center;
   color: var(--gray-500);
+  padding: var(--space-2xl) var(--space-md);
+  font-size: 0.9375rem;
 }
 
-.detail-value {
-  color: var(--gray-800);
-}
-
-/* Custom Success Toast for Agenda */
+/* ── Toast ────────────────────────────────────────── */
 .custom-toast-success {
   position: absolute;
   top: 40px;
@@ -235,4 +290,96 @@
 
 .toast-close-btn:hover {
   opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════
+   Responsivo — Agenda + Modal de agendamento
+   ═══════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .agenda-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+  }
+
+  .agenda-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .agenda-controls {
+    width: 100%;
+    gap: var(--space-md);
+    justify-content: space-between;
+  }
+
+  .agenda-date-picker {
+    font-size: 0.875rem;
+    gap: var(--space-sm);
+  }
+
+  .btn-agendar-header {
+    font-size: 0.875rem;
+  }
+
+  .custom-toast-success {
+    position: fixed;
+    top: auto;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: var(--space-md);
+    right: var(--space-md);
+    min-width: 0;
+    max-width: none;
+    padding: 12px 16px;
+  }
+
+  .custom-toast-success span {
+    font-size: 0.8125rem;
+  }
+
+  /* Modal de agendamento */
+  .schedule-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .schedule-modal-content {
+    max-width: none;
+    max-height: min(92vh, 100dvh);
+    overflow-y: auto;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: var(--space-md);
+  }
+
+  .schedule-modal-content .modal-header {
+    margin-bottom: 0;
+  }
+
+  .schedule-modal-content .modal-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .schedule-modal-content .modal-header h2 {
+    font-size: 1.125rem;
+  }
+
+  .schedule-modal-content .modal-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+
+  .schedule-modal-content .modal-footer {
+    flex-direction: column-reverse;
+    gap: var(--space-sm);
+  }
+
+  .schedule-modal-content .modal-footer .btn-cancel,
+  .schedule-modal-content .modal-footer .btn-submit {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
 }
