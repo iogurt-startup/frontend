@@ -7,6 +7,7 @@ import '../../styles/auth.css'
 
 export function RegisterPage() {
   const [name, setName] = useState('')
+  const [clinicName, setClinicName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -21,7 +22,7 @@ export function RegisterPage() {
     setLoading(true)
 
     try {
-      await authService.register({ name, email, password, role: 'VET' })
+      await authService.register({ name, email, password, clinicName })
       navigate('/login')
     } catch (err: any) {
       if (err.response?.data?.issues) {
@@ -58,7 +59,7 @@ export function RegisterPage() {
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label" htmlFor="register-name">
-              Nome
+              Seu nome
             </label>
             <input
               id="register-name"
@@ -70,6 +71,22 @@ export function RegisterPage() {
               required
               minLength={2}
               autoComplete="name"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="register-clinic">
+              Nome da clínica
+            </label>
+            <input
+              id="register-clinic"
+              className="form-input"
+              type="text"
+              placeholder="Ex: Clínica Veterinária PetLife"
+              value={clinicName}
+              onChange={(e) => setClinicName(e.target.value)}
+              required
+              minLength={2}
             />
           </div>
 
