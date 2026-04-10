@@ -2,9 +2,9 @@ import { api } from './api'
 import type { Appointment, CreateAppointmentRequest } from '../types'
 
 export const AppointmentsService = {
-  async listByDay(date: string): Promise<Appointment[]> {
+  async listByDay(date: string, vetId?: string): Promise<Appointment[]> {
     const response = await api.get<{ appointments: Appointment[] }>('/appointments', {
-      params: { date },
+      params: { date, vetId },
     })
     return response.data.appointments
   },

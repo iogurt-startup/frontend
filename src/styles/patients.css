@@ -303,6 +303,17 @@
   gap: var(--space-sm);
 }
 
+.patient-details-actions button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.patient-details-inline-error {
+  margin: 12px 0 0;
+  color: var(--color-danger);
+  font-size: 0.875rem;
+}
+
 .patient-details-tabs {
   display: flex;
   gap: 0;
