@@ -2,7 +2,10 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { authService } from '../../lib/authService'
+import { useAuthStore } from '../../stores/authStore'
 import { PawSvg, FishSvg, BoneSvg, CatFaceSvg } from '../../components/auth/PetDecorations'
+import { GoogleLoginButton, GoogleIcon } from '../../components/auth/GoogleLoginButton'
+import { isGoogleOAuthConfigured } from '../../lib/googleOAuth'
 import '../../styles/auth.css'
 
 export function RegisterPage() {
@@ -14,6 +17,9 @@ export function RegisterPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const [googleLoading, setGoogleLoading] = useState(false)
+
+  const setAuth = useAuthStore((s) => s.setAuth)
   const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent) => {
@@ -38,6 +44,22 @@ export function RegisterPage() {
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGoogleSuccess = async (accessToken: string) => {
+    setError('')
+    setGoogleLoading(true)
+    try {
+      const data = await authService.googleLogin(accessToken)
+      setAuth(data.user, data.accessToken, data.refreshToken)
+      navigate('/login') // Força o VET a logar se precisar, ou vai direto. No Google é OWNER por padrão se novo.
+      // Wait, let's navigate to home since setAuth is called.
+      navigate(data.user.role === 'TUTOR' ? '/portal' : '/')
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Erro ao autenticar com o Google.')
+    } finally {
+      setGoogleLoading(false)
     }
   }
 
@@ -139,10 +161,33 @@ export function RegisterPage() {
           <button
             type="submit"
             className="btn btn-primary auth-submit"
-            disabled={loading}
+            disabled={loading || googleLoading}
           >
             {loading ? <span className="spinner" /> : 'Criar conta'}
           </button>
+
+          <div className="auth-divider"><span>ou</span></div>
+          {isGoogleOAuthConfigured ? (
+            <GoogleLoginButton
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Login com Google cancelado ou falhou.')}
+              disabled={loading || googleLoading}
+            />
+          ) : (
+            <button
+              type="button"
+              className="btn auth-google-btn"
+              disabled={loading || googleLoading}
+              onClick={() =>
+                setError(
+                  'Configure VITE_GOOGLE_CLIENT_ID em frontend/.env e reinicie o npm run dev.',
+                )
+              }
+            >
+              <GoogleIcon />
+              Entrar com Google
+            </button>
+          )}
 
           <div className="auth-switch text-center">
             Já tem conta?{' '}
