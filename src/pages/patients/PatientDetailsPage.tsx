@@ -152,7 +152,7 @@ export function PatientDetailsPage() {
   return (
     <div className="patient-details-page">
       <div className="patient-details-topbar">
-        <button className="patient-details-back" onClick={() => navigate(-1)} type="button">
+        <button className="patient-details-back" onClick={() => navigate('/pacientes')} type="button">
           <ChevronLeft size={18} />
           Voltar
         </button>
@@ -162,7 +162,7 @@ export function PatientDetailsPage() {
             <Stethoscope size={18} />
             Atender
           </button>
-          <button type="button">
+          <button type="button" onClick={() => navigate(`/pacientes/${patient.id}/editar`)}>
             <Edit2 size={18} />
             Editar dados
           </button>

@@ -21,6 +21,7 @@ import { HomePage } from './pages/home/HomePage'
 import { PatientsListPage } from './pages/patients/PatientsListPage'
 import { PatientRegisterPage } from './pages/patients/PatientRegisterPage'
 import { PatientDetailsPage } from './pages/patients/PatientDetailsPage'
+import { PatientEditPage } from './pages/patients/PatientEditPage'
 import { AgendaPage } from './pages/agenda/AgendaPage'
 import { ClinicalCarePage } from './pages/clinical/ClinicalCarePage'
 import { HistoryListPage } from './pages/history/HistoryListPage'
@@ -89,6 +90,7 @@ export default function App() {
             <Route path="pacientes" element={<PatientsListPage />} />
             <Route path="pacientes/cadastrar" element={<PatientRegisterPage />} />
             <Route path="pacientes/:id" element={<PatientDetailsPage />} />
+            <Route path="pacientes/:id/editar" element={<PatientEditPage />} />
             <Route
               path="atendimentos/:appointmentId/pacientes/:patientId"
               element={<ClinicalCarePage />}

@@ -541,6 +541,52 @@
   margin-bottom: var(--space-xl);
 }
 
+.patient-edit-page {
+  min-height: calc(100vh - 64px);
+}
+
+.patient-edit-topbar {
+  margin-bottom: 20px;
+}
+
+.patient-edit-submit {
+  border: none;
+  background: var(--pink-50);
+  color: var(--pink-500);
+  padding: 10px 16px;
+}
+
+.patient-edit-submit:hover {
+  background: var(--pink-100);
+}
+
+.patient-edit-scroll {
+  max-height: calc(100vh - 190px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.patient-edit-photo-row {
+  align-items: flex-start;
+}
+
+.patient-edit-row-5 {
+  grid-template-columns: minmax(180px, 1.2fr) minmax(160px, 1fr) minmax(220px, 1.2fr) minmax(220px, 1.2fr);
+}
+
+.patient-edit-row-2 {
+  grid-template-columns: minmax(220px, 1fr) minmax(380px, 3fr);
+}
+
+.patient-edit-row-5 .radio-group {
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.patient-edit-tutor-title {
+  margin-top: 16px;
+}
+
 /* ── Section headers ──────────────────────────────── */
 .section-header {
   display: flex;
@@ -835,6 +881,106 @@
   color: white;
 }
 
+.patient-edit-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 16px;
+  backdrop-filter: blur(2px);
+}
+
+.patient-edit-modal {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 22px 40px rgba(0, 0, 0, 0.2);
+  padding: 24px 28px 20px;
+  text-align: center;
+  animation: patientModalIn 0.2s ease-out;
+}
+
+.patient-edit-modal-icon {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto 8px;
+  stroke-width: 2.2;
+}
+
+.patient-edit-modal-icon.save {
+  color: var(--pink-300);
+}
+
+.patient-edit-modal-icon.exit {
+  color: #f2c171;
+}
+
+.patient-edit-modal h3 {
+  margin: 0;
+  color: #2d3138;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.patient-edit-modal p {
+  margin: 12px 0 0;
+  color: #2f3238;
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.patient-edit-modal-actions {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 14px;
+}
+
+.patient-edit-modal-actions button {
+  border: none;
+  border-radius: 8px;
+  height: 42px;
+  padding: 0 16px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.patient-edit-modal-actions .ghost {
+  color: var(--gray-400);
+  background: transparent;
+}
+
+.patient-edit-modal-actions .confirm {
+  color: #fff;
+}
+
+.patient-edit-modal-actions .confirm.save {
+  background: var(--pink-300);
+}
+
+.patient-edit-modal-actions .confirm.exit {
+  background: #f2c171;
+}
+
+@keyframes patientModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* ── Responsive ──────────────────────────────────── */
 @media (max-width: 1024px) {
   .register-patient-page {
@@ -865,6 +1011,17 @@
   }
   .form-row-3 {
     grid-template-columns: 1fr;
+  }
+
+  .patient-edit-row-5,
+  .patient-edit-row-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .patient-edit-scroll {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 }
 
@@ -921,6 +1078,23 @@
     max-height: calc(100vh - 144px);
     overflow-y: auto;
     box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+  }
+
+  .patient-edit-modal {
+    max-width: 340px;
+    padding: 22px 20px 18px;
+  }
+
+  .patient-edit-modal h3 {
+    font-size: 1.48rem;
+  }
+
+  .patient-edit-modal p {
+    font-size: 1rem;
+  }
+
+  .patient-edit-modal-actions button {
+    height: 42px;
   }
 
   .patients-filter-btn,
@@ -1032,6 +1206,18 @@
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-md);
+  }
+
+  .patient-edit-topbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .patient-edit-submit {
+    padding: 8px 12px;
+    min-height: auto;
   }
 
   .patient-details-page {
