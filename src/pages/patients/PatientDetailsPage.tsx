@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, Stethoscope, Edit2, PawPrint, User, FileText } from 'lucide-react'
+import { ChevronLeft, Stethoscope, Edit2, PawPrint, User, FileText, ClipboardPlus } from 'lucide-react'
 import { api } from '../../lib/api'
 import { clinicalService } from '../../lib/clinicalService'
 import { AppointmentsService } from '../../services/appointments.service'
@@ -144,6 +144,7 @@ export function PatientDetailsPage() {
   const [activeTab, setActiveTab] = useState<DetailsTab>('dados')
   const [isStartingCare, setIsStartingCare] = useState(false)
   const [startCareError, setStartCareError] = useState('')
+  const [showStartCareModal, setShowStartCareModal] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -240,7 +241,11 @@ export function PatientDetailsPage() {
         </button>
 
         <div className="patient-details-actions">
-          <button type="button" onClick={() => void handleStartCare()} disabled={isStartingCare}>
+          <button
+            type="button"
+            onClick={() => setShowStartCareModal(true)}
+            disabled={isStartingCare}
+          >
             <Stethoscope size={18} />
             {isStartingCare ? 'Iniciando...' : 'Atender'}
           </button>
@@ -430,6 +435,38 @@ export function PatientDetailsPage() {
             </table>
           </div>
         </section>
+      )}
+
+      {showStartCareModal && (
+        <div className="patient-edit-modal-overlay" role="presentation">
+          <div className="patient-edit-modal">
+            <ClipboardPlus className="patient-edit-modal-icon save" />
+            <h3>Realizar atendimento</h3>
+            <p>Deseja iniciar um atendimento?</p>
+
+            <div className="patient-edit-modal-actions">
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => setShowStartCareModal(false)}
+                disabled={isStartingCare}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="confirm save"
+                onClick={() => {
+                  setShowStartCareModal(false)
+                  void handleStartCare()
+                }}
+                disabled={isStartingCare}
+              >
+                {isStartingCare ? 'Iniciando...' : 'Atender'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

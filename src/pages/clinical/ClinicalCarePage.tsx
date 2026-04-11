@@ -362,7 +362,7 @@ export function ClinicalCarePage() {
   }
 
   function handleBack() {
-    if (isDirty && !record?.finalized) {
+    if (!record?.finalized) {
       setShowExitModal(true)
       return
     }
@@ -741,7 +741,11 @@ export function ClinicalCarePage() {
           <div className="care-modal">
             <AlertCircle className="care-modal-icon warn" />
             <h3>Deseja sair?</h3>
-            <p>Você ainda não salvou as alterações deste atendimento. Deseja sair mesmo assim?</p>
+            <p>
+              {isDirty
+                ? 'Você ainda não salvou as alterações deste atendimento. Deseja sair mesmo assim?'
+                : 'Deseja sair desse atendimento?'}
+            </p>
             <div className="care-modal-actions">
               <button type="button" onClick={() => setShowExitModal(false)}>
                 Cancelar
