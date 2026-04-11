@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, Stethoscope, Edit2, PawPrint, User, FileText } from 'lucide-react'
+import { ChevronLeft, Stethoscope, Edit2, PawPrint, User, FileText, ClipboardPlus } from 'lucide-react'
 import { api } from '../../lib/api'
 import { clinicalService } from '../../lib/clinicalService'
-import type { ClinicalHistoryItem, Patient } from '../../types'
+import { AppointmentsService } from '../../services/appointments.service'
+import { useAuthStore } from '../../stores/authStore'
+import type { Appointment, ClinicalHistoryItem, Patient } from '../../types'
 import '../../styles/patients.css'
 
 type DetailsTab = 'dados' | 'prontuario'
+const IMMEDIATE_APPOINTMENT_WINDOW_MS = 30 * 60 * 1000
 
 function getAppointmentCategoryLabel(category?: string | null) {
   switch (category) {
@@ -99,13 +102,49 @@ function extractAddress(addressStr?: string | null) {
   return raw
 }
 
+function getTodayISO() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function isCompatibleAppointment(
+  appointment: Appointment,
+  patientId: string,
+  vetId: string,
+  now: Date,
+) {
+  if (appointment.patientId !== patientId || appointment.vetId !== vetId) return false
+  if (appointment.status !== 'SCHEDULED' && appointment.status !== 'IN_PROGRESS') return false
+
+  const appointmentTime = new Date(appointment.dateTime).getTime()
+  if (Number.isNaN(appointmentTime)) return false
+
+  return Math.abs(appointmentTime - now.getTime()) <= IMMEDIATE_APPOINTMENT_WINDOW_MS
+}
+
+function compareAppointmentsByPriority(a: Appointment, b: Appointment, now: Date) {
+  if (a.status === 'IN_PROGRESS' && b.status !== 'IN_PROGRESS') return -1
+  if (b.status === 'IN_PROGRESS' && a.status !== 'IN_PROGRESS') return 1
+
+  const distanceA = Math.abs(new Date(a.dateTime).getTime() - now.getTime())
+  const distanceB = Math.abs(new Date(b.dateTime).getTime() - now.getTime())
+  return distanceA - distanceB
+}
+
 export function PatientDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const user = useAuthStore((s) => s.user)
   const [patient, setPatient] = useState<Patient | null>(null)
   const [history, setHistory] = useState<ClinicalHistoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<DetailsTab>('dados')
+  const [isStartingCare, setIsStartingCare] = useState(false)
+  const [startCareError, setStartCareError] = useState('')
+  const [showStartCareModal, setShowStartCareModal] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -149,6 +188,50 @@ export function PatientDetailsPage() {
   const address = extractAddress(patient.tutor?.address)
   const visibleHistory = history.filter((item) => item.finalized)
 
+  async function handleStartCare() {
+    if (!patient || !user) {
+      setStartCareError('Você precisa estar logado para iniciar o atendimento.')
+      return
+    }
+
+    const now = new Date()
+    setIsStartingCare(true)
+    setStartCareError('')
+
+    try {
+      const appointments = await AppointmentsService.listByDay(getTodayISO(), user.id)
+      const existingAppointment = appointments
+        .filter((appointment) => isCompatibleAppointment(appointment, patient.id, user.id, now))
+        .sort((a, b) => compareAppointmentsByPriority(a, b, now))[0]
+
+      if (existingAppointment) {
+        navigate(`/atendimentos/${existingAppointment.id}/pacientes/${patient.id}`)
+        return
+      }
+
+      const immediateAppointment = await AppointmentsService.create({
+        patientId: patient.id,
+        vetId: user.id,
+        dateTime: now.toISOString(),
+        category: 'OBSERVATION',
+        observation: 'Atendimento iniciado pela pagina do paciente.',
+      })
+
+      navigate(`/atendimentos/${immediateAppointment.id}/pacientes/${patient.id}`)
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { error?: string; message?: string } } })?.response?.data
+          ?.error ??
+        (err as { response?: { data?: { error?: string; message?: string } } })?.response?.data
+          ?.message ??
+        'Nao foi possivel iniciar o atendimento.'
+
+      setStartCareError(message)
+    } finally {
+      setIsStartingCare(false)
+    }
+  }
+
   return (
     <div className="patient-details-page">
       <div className="patient-details-topbar">
@@ -158,9 +241,13 @@ export function PatientDetailsPage() {
         </button>
 
         <div className="patient-details-actions">
-          <button type="button">
+          <button
+            type="button"
+            onClick={() => setShowStartCareModal(true)}
+            disabled={isStartingCare}
+          >
             <Stethoscope size={18} />
-            Atender
+            {isStartingCare ? 'Iniciando...' : 'Atender'}
           </button>
           <button type="button" onClick={() => navigate(`/pacientes/${patient.id}/editar`)}>
             <Edit2 size={18} />
@@ -168,6 +255,8 @@ export function PatientDetailsPage() {
           </button>
         </div>
       </div>
+
+      {startCareError ? <p className="patient-details-inline-error">{startCareError}</p> : null}
 
       <div className="patient-details-tabs">
         <button
@@ -346,6 +435,38 @@ export function PatientDetailsPage() {
             </table>
           </div>
         </section>
+      )}
+
+      {showStartCareModal && (
+        <div className="patient-edit-modal-overlay" role="presentation">
+          <div className="patient-edit-modal">
+            <ClipboardPlus className="patient-edit-modal-icon save" />
+            <h3>Realizar atendimento</h3>
+            <p>Deseja iniciar um atendimento?</p>
+
+            <div className="patient-edit-modal-actions">
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => setShowStartCareModal(false)}
+                disabled={isStartingCare}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="confirm save"
+                onClick={() => {
+                  setShowStartCareModal(false)
+                  void handleStartCare()
+                }}
+                disabled={isStartingCare}
+              >
+                {isStartingCare ? 'Iniciando...' : 'Atender'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -190,6 +190,7 @@ export interface ClinicalHistoryItem extends ClinicalRecord {
     id: string
     category: AppointmentCategory
     dateTime: string
+    vet?: Pick<User, 'id' | 'name'>
   } | null
 }
 

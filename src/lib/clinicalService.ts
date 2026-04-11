@@ -1,5 +1,7 @@
 import { api } from './api'
+import { AppointmentsService } from '../services/appointments.service'
 import type {
+  Appointment,
   ClinicalHistoryItem,
   ClinicalRecord,
   Patient,
@@ -8,6 +10,60 @@ import type {
 } from '../types'
 
 const inFlightClinicalRecordStarts = new Map<string, Promise<ClinicalRecord>>()
+
+function getIsoDate(value?: string | null) {
+  if (!value) return null
+
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return null
+
+  const year = parsed.getFullYear()
+  const month = String(parsed.getMonth() + 1).padStart(2, '0')
+  const day = String(parsed.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+async function getAppointmentsByDate(date: string): Promise<Appointment[]> {
+  return AppointmentsService.listByDay(date)
+}
+
+async function enrichHistoryWithVetNames(items: ClinicalHistoryItem[]) {
+  const dates = Array.from(
+    new Set(
+      items
+        .map((item) => getIsoDate(item.appointment?.dateTime ?? item.createdAt))
+        .filter((value): value is string => Boolean(value)),
+    ),
+  )
+
+  if (dates.length === 0) return items
+
+  const appointmentBatches = await Promise.all(dates.map((date) => getAppointmentsByDate(date)))
+  const appointmentsById = new Map(
+    appointmentBatches
+      .flat()
+      .map((appointment) => [appointment.id, appointment] as const),
+  )
+
+  return items.map((item) => {
+    const linkedAppointment = item.appointmentId
+      ? appointmentsById.get(item.appointmentId)
+      : undefined
+
+    if (!linkedAppointment) return item
+
+    return {
+      ...item,
+      vet: item.vet ?? linkedAppointment.vet,
+      appointment: {
+        id: item.appointment?.id ?? linkedAppointment.id,
+        category: item.appointment?.category ?? linkedAppointment.category,
+        dateTime: item.appointment?.dateTime ?? linkedAppointment.dateTime,
+        vet: item.appointment?.vet ?? linkedAppointment.vet,
+      },
+    }
+  })
+}
 
 export const clinicalService = {
   async startClinicalRecord(appointmentId: string): Promise<ClinicalRecord> {
@@ -49,7 +105,7 @@ export const clinicalService = {
     const response = await api.get<{ items: ClinicalHistoryItem[] }>(
       `/clinical-records/patient/${patientId}`,
     )
-    return response.data.items ?? []
+    return enrichHistoryWithVetNames(response.data.items ?? [])
   },
 
   async getPatientVaccinations(patientId: string): Promise<Vaccination[]> {
