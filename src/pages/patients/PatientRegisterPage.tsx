@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Save, PawPrint, User, Plus } from 'lucide-react'
 import { api } from '../../lib/api'
+import { TutorsService } from '../../services/tutors.service'
+import type { Tutor } from '../../types'
 import '../../styles/patients.css'
 
 const SPECIES_OPTIONS = [
@@ -27,6 +29,8 @@ const STATES_BR = [
   'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG',
   'PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO',
 ]
+
+type TutorMode = 'new' | 'existing'
 
 interface FormData {
   // Patient
@@ -172,9 +176,71 @@ function extractWeightNumber(value: string): number | null {
   return Number.isNaN(parsed) ? null : parsed
 }
 
+function normalizeText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
+function extractAddressFields(addressStr?: string | null) {
+  const raw = {
+    cep: '',
+    state: '',
+    city: '',
+    neighborhood: '',
+    street: '',
+    addressNumber: '',
+    complement: '',
+  }
+
+  if (!addressStr) return raw
+
+  const parts = addressStr.split(',').map((item) => item.trim()).filter(Boolean)
+  const cepPart = parts.find((item) => item.startsWith('CEP:'))
+  const numberPart = parts.find((item) => item.startsWith('nº'))
+
+  raw.street = parts[0] || ''
+  if (cepPart) raw.cep = cepPart.replace('CEP:', '').trim()
+  if (numberPart) raw.addressNumber = numberPart.replace('nº', '').trim()
+
+  let cursor = parts.length - 1
+  if (cepPart) cursor -= 1
+
+  if (cursor > 0 && parts[cursor] !== numberPart && parts[cursor] !== raw.street) {
+    raw.state = parts[cursor]
+    cursor -= 1
+  }
+  if (cursor > 0 && parts[cursor] !== numberPart && parts[cursor] !== raw.street) {
+    raw.city = parts[cursor]
+    cursor -= 1
+  }
+  if (cursor > 0 && parts[cursor] !== numberPart && parts[cursor] !== raw.street) {
+    raw.neighborhood = parts[cursor]
+    cursor -= 1
+  }
+
+  if (numberPart) {
+    const numberIdx = parts.indexOf(numberPart)
+    if (numberIdx !== -1 && numberIdx < cursor) {
+      raw.complement = parts.slice(numberIdx + 1, cursor + 1).join(', ')
+    }
+  } else if (cursor > 0) {
+    raw.complement = parts.slice(1, cursor + 1).join(', ')
+  }
+
+  return raw
+}
+
 export function PatientRegisterPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState<FormData>(initialForm)
+  const [tutorMode, setTutorMode] = useState<TutorMode>('new')
+  const [tutorSearch, setTutorSearch] = useState('')
+  const [tutorSearchResults, setTutorSearchResults] = useState<Tutor[]>([])
+  const [selectedTutorId, setSelectedTutorId] = useState('')
+  const [searchingTutor, setSearchingTutor] = useState(false)
+  const [tutorSelectionError, setTutorSelectionError] = useState('')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
@@ -208,6 +274,148 @@ export function PatientRegisterPage() {
       if (value !== 'Sim') delete next.microchipNumber
       return next
     })
+  }
+
+  function clearTutorFields() {
+    setForm((prev) => ({
+      ...prev,
+      tutorFullName: '',
+      tutorCpf: '',
+      tutorPhone: '',
+      tutorEmail: '',
+      tutorInsurance: '',
+      cep: '',
+      state: '',
+      city: '',
+      neighborhood: '',
+      street: '',
+      addressNumber: '',
+      complement: '',
+    }))
+  }
+
+  function clearTutorErrors() {
+    setErrors((prev) => {
+      const next = { ...prev }
+      delete next.tutorFullName
+      delete next.tutorCpf
+      delete next.tutorPhone
+      delete next.tutorEmail
+      delete next.tutorInsurance
+      delete next.cep
+      delete next.state
+      delete next.city
+      delete next.neighborhood
+      delete next.street
+      delete next.addressNumber
+      delete next.complement
+      return next
+    })
+  }
+
+  function handleTutorModeChange(mode: TutorMode) {
+    setTutorMode(mode)
+    setTutorSearch('')
+    setTutorSearchResults([])
+    setSelectedTutorId('')
+    setTutorSelectionError('')
+    clearTutorFields()
+    clearTutorErrors()
+  }
+
+  async function listAllTutors() {
+    const tutors: Tutor[] = []
+    let page = 1
+    let total = 0
+
+    do {
+      const response = await TutorsService.list(page)
+      tutors.push(...response.tutors)
+      total = response.total
+      page += 1
+    } while (tutors.length < total && page <= 20)
+
+    return tutors
+  }
+
+  async function handleSearchTutor() {
+    const query = tutorSearch.trim()
+    if (!query) {
+      setTutorSelectionError('Digite nome ou CPF para buscar um tutor')
+      setTutorSearchResults([])
+      setSelectedTutorId('')
+      return
+    }
+
+    setSearchingTutor(true)
+    setTutorSelectionError('')
+    setTutorSearchResults([])
+    setSelectedTutorId('')
+
+    try {
+      const cpfDigits = query.replace(/\D/g, '')
+      let tutors: Tutor[] = []
+
+      if (cpfDigits.length >= 3) {
+        tutors = await listAllTutors()
+      } else {
+        const response = await TutorsService.list(1, query)
+        tutors = response.tutors
+      }
+
+      const normalizedQuery = normalizeText(query)
+      const filtered = tutors.filter((tutor) => {
+        const tutorName = normalizeText(tutor.fullName)
+        const tutorCpfDigits = tutor.cpf.replace(/\D/g, '')
+        const matchesName = tutorName.includes(normalizedQuery)
+        const matchesCpf = cpfDigits.length > 0 && tutorCpfDigits.includes(cpfDigits)
+        return matchesName || matchesCpf
+      })
+
+      const uniqueResults = Array.from(new Map(filtered.map((item) => [item.id, item])).values())
+      setTutorSearchResults(uniqueResults)
+
+      if (uniqueResults.length === 0) {
+        setTutorSelectionError('Nenhum tutor encontrado para o termo informado')
+      }
+    } catch (err) {
+      showToast('Não foi possível buscar tutores agora.', 'error')
+    } finally {
+      setSearchingTutor(false)
+    }
+  }
+
+  function handleSelectExistingTutor(tutorId: string) {
+    setSelectedTutorId(tutorId)
+
+    if (!tutorId) {
+      clearTutorFields()
+      setTutorSelectionError('Selecione um tutor existente para continuar')
+      return
+    }
+
+    const tutor = tutorSearchResults.find((item) => item.id === tutorId)
+    if (!tutor) return
+
+    const address = extractAddressFields(tutor.address)
+    setForm((prev) => ({
+      ...prev,
+      tutorFullName: tutor.fullName,
+      tutorCpf: maskCpf(tutor.cpf),
+      tutorPhone: maskPhone(tutor.phone),
+      tutorEmail: tutor.email || '',
+      tutorInsurance: tutor.insurance || 'Nenhum',
+      cep: address.cep,
+      state: address.state,
+      city: address.city,
+      neighborhood: address.neighborhood,
+      street: address.street,
+      addressNumber: address.addressNumber,
+      complement: address.complement,
+    }))
+
+    clearTutorErrors()
+    setTutorSelectionError('')
   }
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -244,11 +452,21 @@ export function PatientRegisterPage() {
     } else if (!isValidDateBR(form.birthDate)) {
       newErrors.birthDate = 'Data de nascimento inválida'
     }
-    if (!form.tutorFullName.trim()) newErrors.tutorFullName = 'Nome do tutor é obrigatório'
-    if (!form.tutorCpf || form.tutorCpf.replace(/\D/g, '').length !== 11) newErrors.tutorCpf = 'CPF inválido'
-    if (!form.tutorPhone || form.tutorPhone.replace(/\D/g, '').length < 10) newErrors.tutorPhone = 'Telefone inválido'
+    const missingTutorSelection = tutorMode === 'existing' && !selectedTutorId
+    if (missingTutorSelection) {
+      setTutorSelectionError('Selecione um tutor existente para continuar')
+    } else {
+      setTutorSelectionError('')
+    }
+
+    if (tutorMode === 'new') {
+      if (!form.tutorFullName.trim()) newErrors.tutorFullName = 'Nome do tutor é obrigatório'
+      if (!form.tutorCpf || form.tutorCpf.replace(/\D/g, '').length !== 11) newErrors.tutorCpf = 'CPF inválido'
+      if (!form.tutorPhone || form.tutorPhone.replace(/\D/g, '').length < 10) newErrors.tutorPhone = 'Telefone inválido'
+    }
+
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return Object.keys(newErrors).length === 0 && !missingTutorSelection
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -259,50 +477,47 @@ export function PatientRegisterPage() {
 
     setLoading(true)
     try {
-      // 1. Build tutor address string
-      const addressParts = [
-        form.street,
-        form.addressNumber && `nº ${form.addressNumber}`,
-        form.complement,
-        form.neighborhood,
-        form.city,
-        form.state,
-        form.cep && `CEP: ${form.cep}`,
-      ].filter(Boolean)
-      const addressStr = addressParts.length > 0 ? addressParts.join(', ') : undefined
-
-      // 2. Create tutor
-      const cpfClean = form.tutorCpf.replace(/\D/g, '')
-      const phoneClean = form.tutorPhone.replace(/\D/g, '')
-      
       let tutorId: string
 
-      const tutorPayload = {
-        fullName: form.tutorFullName,
-        cpf: cpfClean,
-        phone: phoneClean,
-        email: form.tutorEmail || undefined,
-        address: addressStr,
-        insurance: form.tutorInsurance && form.tutorInsurance !== 'Nenhum' ? form.tutorInsurance : undefined,
-      };
+      if (tutorMode === 'existing') {
+        if (!selectedTutorId) {
+          setTutorSelectionError('Selecione um tutor existente para continuar')
+          setLoading(false)
+          return
+        }
+        tutorId = selectedTutorId
+      } else {
+        const addressParts = [
+          form.street,
+          form.addressNumber && `nº ${form.addressNumber}`,
+          form.complement,
+          form.neighborhood,
+          form.city,
+          form.state,
+          form.cep && `CEP: ${form.cep}`,
+        ].filter(Boolean)
+        const addressStr = addressParts.length > 0 ? addressParts.join(', ') : undefined
+        const cpfClean = form.tutorCpf.replace(/\D/g, '')
+        const phoneClean = form.tutorPhone.replace(/\D/g, '')
 
-      try {
-        const tutorRes = await api.post('/tutors', tutorPayload)
-        tutorId = tutorRes.data.tutor.id
-      } catch (err: any) {
-        if (err.response?.status === 409) {
-          const listRes = await api.get('/tutors', { params: { search: form.tutorFullName } })
-          const existingTutor = listRes.data.tutors?.find(
-            (t: any) => t.cpf === cpfClean
-          )
-          if (existingTutor) {
-            tutorId = existingTutor.id
-          } else {
-            showToast('CPF já cadastrado mas tutor não encontrado. Verifique os dados.', 'error')
+        const tutorPayload = {
+          fullName: form.tutorFullName,
+          cpf: cpfClean,
+          phone: phoneClean,
+          email: form.tutorEmail || undefined,
+          address: addressStr,
+          insurance: form.tutorInsurance && form.tutorInsurance !== 'Nenhum' ? form.tutorInsurance : undefined,
+        }
+
+        try {
+          const tutorRes = await api.post('/tutors', tutorPayload)
+          tutorId = tutorRes.data.tutor.id
+        } catch (err: any) {
+          if (err.response?.status === 409) {
+            showToast('Tutor já cadastrado. Use a opção "Selecionar tutor existente".', 'error')
             setLoading(false)
             return
           }
-        } else {
           throw err
         }
       }
@@ -611,6 +826,97 @@ export function PatientRegisterPage() {
           <h2>Tutor</h2>
         </div>
 
+        <p className="section-subtitle">Vínculo do tutor</p>
+
+        <div className="form-row form-row-1">
+          <div className="form-group">
+            <label className="register-label">Como deseja vincular o tutor?</label>
+            <div className="radio-group">
+              <label className="radio-option">
+                <input
+                  type="radio"
+                  name="tutor-mode"
+                  checked={tutorMode === 'new'}
+                  onChange={() => handleTutorModeChange('new')}
+                />
+                Cadastrar novo tutor
+              </label>
+              <label className="radio-option">
+                <input
+                  type="radio"
+                  name="tutor-mode"
+                  checked={tutorMode === 'existing'}
+                  onChange={() => handleTutorModeChange('existing')}
+                />
+                Selecionar tutor existente
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {tutorMode === 'existing' && (
+          <>
+            <div className="form-row form-row-2">
+              <div className="form-group">
+                <label className="register-label" htmlFor="existing-tutor-search">
+                  Buscar tutor por CPF ou nome:
+                </label>
+                <input
+                  id="existing-tutor-search"
+                  className="register-input"
+                  type="text"
+                  placeholder="Digite CPF ou nome do tutor"
+                  value={tutorSearch}
+                  onChange={(e) => setTutorSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      void handleSearchTutor()
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="register-label">&nbsp;</label>
+                <button
+                  className="register-submit-btn tutor-search-btn"
+                  type="button"
+                  onClick={() => void handleSearchTutor()}
+                  disabled={searchingTutor || !tutorSearch.trim() || loading}
+                >
+                  {searchingTutor ? 'Buscando...' : 'Buscar tutor'}
+                </button>
+              </div>
+            </div>
+
+            <div className="form-row form-row-1">
+              <div className="form-group">
+                <label className="register-label" htmlFor="existing-tutor-results">
+                  Resultado da busca:
+                </label>
+                <select
+                  id="existing-tutor-results"
+                  className="register-select"
+                  value={selectedTutorId}
+                  onChange={(e) => handleSelectExistingTutor(e.target.value)}
+                  disabled={searchingTutor || tutorSearchResults.length === 0}
+                >
+                  <option value="">
+                    {tutorSearchResults.length > 0 ? 'Selecione um tutor' : 'Nenhum tutor listado'}
+                  </option>
+                  {tutorSearchResults.map((tutor) => (
+                    <option key={tutor.id} value={tutor.id}>
+                      {`${tutor.fullName} • CPF ${maskCpf(tutor.cpf)}`}
+                    </option>
+                  ))}
+                </select>
+                {tutorSelectionError && <span className="field-error">{tutorSelectionError}</span>}
+              </div>
+            </div>
+          </>
+        )}
+
         <p className="section-subtitle">Dados básicos</p>
 
         <div className="form-row form-row-4">
@@ -625,6 +931,7 @@ export function PatientRegisterPage() {
               type="text"
               placeholder="Nome completo"
               value={form.tutorFullName}
+              disabled={tutorMode === 'existing'}
               onChange={(e) => updateField('tutorFullName', e.target.value)}
             />
             {errors.tutorFullName && <span className="field-error">{errors.tutorFullName}</span>}
@@ -641,6 +948,7 @@ export function PatientRegisterPage() {
               type="text"
               placeholder="___.___.___-__"
               value={form.tutorCpf}
+              disabled={tutorMode === 'existing'}
               onChange={(e) => updateField('tutorCpf', maskCpf(e.target.value))}
               maxLength={14}
             />
@@ -658,6 +966,7 @@ export function PatientRegisterPage() {
               type="text"
               placeholder="(__) _____-____"
               value={form.tutorPhone}
+              disabled={tutorMode === 'existing'}
               onChange={(e) => updateField('tutorPhone', maskPhone(e.target.value))}
               maxLength={15}
             />
@@ -675,6 +984,7 @@ export function PatientRegisterPage() {
               type="email"
               placeholder="exemplo@gmail.com"
               value={form.tutorEmail}
+              disabled={tutorMode === 'existing'}
               onChange={(e) => updateField('tutorEmail', e.target.value)}
             />
           </div>
@@ -690,6 +1000,7 @@ export function PatientRegisterPage() {
               id="tutor-insurance"
               className="register-select"
               value={form.tutorInsurance}
+              disabled={tutorMode === 'existing'}
               onChange={(e) => updateField('tutorInsurance', e.target.value)}
             >
               <option value="">Selecionar</option>
@@ -714,6 +1025,7 @@ export function PatientRegisterPage() {
               type="text"
               placeholder="_____-___"
               value={form.cep}
+              disabled={tutorMode === 'existing'}
               onChange={(e) => updateField('cep', maskCep(e.target.value))}
               maxLength={9}
             />
@@ -728,6 +1040,7 @@ export function PatientRegisterPage() {
               id="state"
               className="register-select"
               value={form.state}
+              disabled={tutorMode === 'existing'}
               onChange={(e) => updateField('state', e.target.value)}
             >
               <option value="">Selecionar</option>
@@ -748,6 +1061,7 @@ export function PatientRegisterPage() {
               type="text"
               placeholder="Cidade"
               value={form.city}
+              disabled={tutorMode === 'existing'}
               onChange={(e) => updateField('city', e.target.value)}
             />
           </div>
@@ -763,6 +1077,7 @@ export function PatientRegisterPage() {
               type="text"
               placeholder="Bairro"
               value={form.neighborhood}
+              disabled={tutorMode === 'existing'}
               onChange={(e) => updateField('neighborhood', e.target.value)}
             />
           </div>
@@ -780,6 +1095,7 @@ export function PatientRegisterPage() {
               type="text"
               placeholder="Logradouro"
               value={form.street}
+              disabled={tutorMode === 'existing'}
               onChange={(e) => updateField('street', e.target.value)}
             />
           </div>
@@ -795,6 +1111,7 @@ export function PatientRegisterPage() {
               type="text"
               placeholder="Número"
               value={form.addressNumber}
+              disabled={tutorMode === 'existing'}
               onChange={(e) => updateField('addressNumber', e.target.value)}
             />
           </div>
@@ -810,6 +1127,7 @@ export function PatientRegisterPage() {
               type="text"
               placeholder="Complemento"
               value={form.complement}
+              disabled={tutorMode === 'existing'}
               onChange={(e) => updateField('complement', e.target.value)}
             />
           </div>
