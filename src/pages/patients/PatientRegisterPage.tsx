@@ -37,6 +37,7 @@ interface FormData {
   sex: string
   weightKg: string
   hasMicrochip: string
+  microchipNumber: string
   observations: string
   photoUrl?: string
   // Tutor
@@ -63,6 +64,7 @@ const initialForm: FormData = {
   sex: '',
   weightKg: '',
   hasMicrochip: '',
+  microchipNumber: '',
   observations: '',
   photoUrl: '',
   tutorFullName: '',
@@ -163,6 +165,13 @@ function isValidDateBR(dateStr: string): boolean {
   return true
 }
 
+function extractWeightNumber(value: string): number | null {
+  const normalized = value.replace(/[^\d.,]/g, '').replace(',', '.')
+  if (!normalized) return null
+  const parsed = Number(normalized)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
 export function PatientRegisterPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState<FormData>(initialForm)
@@ -186,6 +195,21 @@ export function PatientRegisterPage() {
     setTimeout(() => setToast(null), 4000)
   }
 
+  function handleMicrochipSelection(value: string) {
+    setForm((prev) => ({
+      ...prev,
+      hasMicrochip: value,
+      microchipNumber: value === 'Sim' ? prev.microchipNumber : '',
+    }))
+
+    setErrors((prev) => {
+      const next = { ...prev }
+      delete next.hasMicrochip
+      if (value !== 'Sim') delete next.microchipNumber
+      return next
+    })
+  }
+
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -204,6 +228,17 @@ export function PatientRegisterPage() {
     if (!form.breed.trim()) newErrors.breed = 'Raça é obrigatória'
     if (!form.sex) newErrors.sex = 'Sexo é obrigatório'
     if (!form.hasMicrochip) newErrors.hasMicrochip = 'Informe se possui microchip'
+    if (form.hasMicrochip === 'Sim' && !form.microchipNumber.trim()) {
+      newErrors.microchipNumber = 'Número do microchip é obrigatório'
+    }
+    if (form.weightKg.trim()) {
+      const parsedWeight = extractWeightNumber(form.weightKg)
+      if (parsedWeight === null) {
+        newErrors.weightKg = 'Peso inválido'
+      } else if (parsedWeight > 999.99) {
+        newErrors.weightKg = 'Peso deve ser menor ou igual a 999,99 kg'
+      }
+    }
     if (!form.birthDate || form.birthDate.length < 10) {
       newErrors.birthDate = 'Data de nascimento é obrigatória'
     } else if (!isValidDateBR(form.birthDate)) {
@@ -274,6 +309,8 @@ export function PatientRegisterPage() {
 
       // 3. Create patient
       const birthDateISO = parseDateBR(form.birthDate)
+      const microchipValue = form.microchipNumber.trim()
+      const parsedWeight = extractWeightNumber(form.weightKg)
       const patientPayload = {
         name: form.petName,
         tutorId,
@@ -281,9 +318,9 @@ export function PatientRegisterPage() {
         breed: form.breed || undefined,
         birthDate: birthDateISO,
         sex: form.sex || undefined,
-        weightKg: form.weightKg ? parseFloat(form.weightKg) : undefined,
+        weightKg: parsedWeight ?? undefined,
         observations: form.observations || undefined,
-        microchip: form.hasMicrochip === 'Sim' ? 'Sim' : undefined,
+        microchip: form.hasMicrochip === 'Sim' ? (microchipValue || 'Sim') : undefined,
         photoUrl: form.photoUrl || undefined,
       };
       
@@ -469,6 +506,7 @@ export function PatientRegisterPage() {
                 updateField('weightKg', val)
               }}
             />
+            {errors.weightKg && <span className="field-error">{errors.weightKg}</span>}
           </div>
 
           {/* Sexo */}
@@ -513,7 +551,7 @@ export function PatientRegisterPage() {
                   name="microchip"
                   value="Sim"
                   checked={form.hasMicrochip === 'Sim'}
-                  onChange={(e) => updateField('hasMicrochip', e.target.value)}
+                  onChange={(e) => handleMicrochipSelection(e.target.value)}
                 />
                 Sim
               </label>
@@ -523,7 +561,7 @@ export function PatientRegisterPage() {
                   name="microchip"
                   value="Não"
                   checked={form.hasMicrochip === 'Não'}
-                  onChange={(e) => updateField('hasMicrochip', e.target.value)}
+                  onChange={(e) => handleMicrochipSelection(e.target.value)}
                 />
                 Não
               </label>
@@ -531,6 +569,25 @@ export function PatientRegisterPage() {
             {errors.hasMicrochip && <span className="field-error">{errors.hasMicrochip}</span>}
           </div>
         </div>
+
+        {form.hasMicrochip === 'Sim' && (
+          <div className="form-row form-row-1">
+            <div className="form-group">
+              <label className="register-label" htmlFor="microchip-number">
+                Número do microchip: <span className="required">*</span>
+              </label>
+              <input
+                id="microchip-number"
+                className="register-input"
+                type="text"
+                placeholder="Digite o número do microchip"
+                value={form.microchipNumber}
+                onChange={(e) => updateField('microchipNumber', e.target.value)}
+              />
+              {errors.microchipNumber && <span className="field-error">{errors.microchipNumber}</span>}
+            </div>
+          </div>
+        )}
 
         {/* Observações */}
         <div className="form-group" style={{ marginBottom: 'var(--space-md)' }}>

@@ -53,6 +53,12 @@ function formatWeight(value?: number | null) {
   return value ? `${value} kg` : '—'
 }
 
+function formatMicrochip(value?: string | null) {
+  if (!value || value === 'Não') return 'Não possui'
+  if (value === 'Sim') return 'Possui'
+  return `Possui (${value})`
+}
+
 function extractAddress(addressStr?: string | null) {
   const raw = {
     cep: '—',
@@ -314,7 +320,7 @@ export function PatientDetailsPage() {
               </div>
               <div className="patient-details-info-row">
                 <span>Microchip:</span>
-                <strong>{patient.microchip === 'Sim' ? 'Possui' : 'Não possui'}</strong>
+                <strong>{formatMicrochip(patient.microchip)}</strong>
               </div>
               <div className="patient-details-info-row">
                 <span>Espécie:</span>
