@@ -1,0 +1,260 @@
+/* src/styles/home.css */
+
+.home-dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+  margin-top: 10px;
+}
+
+@media (max-width: 1024px) {
+  .home-dashboard {
+    grid-template-columns: 1fr;
+  }
+}
+
+.home-section {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.home-section-header h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+.home-btn-more {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: var(--gray-600);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.home-btn-more:hover {
+  color: var(--color-primary);
+}
+
+/* Últimos atendimentos */
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.appointment-card {
+  display: grid;
+  grid-template-columns: 140px 1.2fr 1fr; 
+  align-items: center;
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-200);
+  background: white;
+  gap: var(--space-md);
+  transition: box-shadow var(--transition-fast);
+}
+
+.appointment-card:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.appointment-card--green { border-color: #4DB6AC; }
+.appointment-card--yellow { border-color: #FFD54F; }
+.appointment-card--blue { border-color: #64B5F6; }
+.appointment-card--cyan { border-color: #4DD0E1; }
+.appointment-card--pink { border-color: #F06292; }
+.appointment-card--orange { border-color: #FF8A65; }
+.appointment-card--purple { border-color: #BA68C8; }
+
+.app-pet-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-card-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  background: var(--gray-100);
+  overflow: hidden;
+}
+
+.app-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-pet-name {
+  font-weight: 500;
+  font-size: 0.9375rem;
+  color: var(--gray-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
+.app-card-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app-info-row {
+  display: flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: var(--gray-700);
+  line-height: 1.2;
+}
+
+.app-info-label {
+  color: var(--gray-500);
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
+/* Agenda do dia */
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-md);
+}
+
+.timeline-time {
+  width: 40px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--gray-500);
+  flex-shrink: 0;
+  padding-top: 14px; 
+  text-align: right;
+}
+
+.timeline-card {
+  flex: 1;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--gray-200);
+}
+
+/* Agenda colors */
+.timeline-card--cyan {
+  background: #E0F7FA;
+  border-color: #B2EBF2;
+}
+
+.timeline-card--yellow {
+  background: #FFF9C4;
+  border-color: #FFF59D;
+}
+
+.timeline-card--pink {
+  background: #FCE4EC;
+  border-color: #F8BBD0;
+}
+
+.timeline-card--gray {
+  background: #F5F5F5;
+  border-color: #E0E0E0;
+}
+
+.timeline-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.timeline-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--gray-100);
+}
+
+.timeline-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.timeline-pet-name {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--gray-900);
+}
+
+.timeline-info-row {
+  display: flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: var(--gray-700);
+  line-height: 1.2;
+}
+
+.timeline-info-label {
+  color: var(--gray-500);
+  margin-right: 6px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .appointment-card {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .app-pet-profile {
+    margin-bottom: 4px;
+  }
+
+  .app-pet-name {
+    max-width: 100%;
+  }
+
+  .home-section {
+    padding: 16px;
+  }
+
+  .timeline-item {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .timeline-time {
+    text-align: left;
+    padding-top: 0;
+    width: auto;
+  }
+}
