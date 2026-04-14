@@ -28,7 +28,7 @@ describe('Login Tests', () => {
 
   test('Deve redirecionar após login bem-sucedido', async () => {
     await loginPage.navigate();
-    await loginPage.login('vet@example.com', '123456');
+    await loginPage.login('teste@example.com', '123456');
 
     await driver.wait(async (d) => {
       const url = await d.getCurrentUrl();
