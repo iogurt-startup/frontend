@@ -8,13 +8,12 @@ import { LandingPage } from './pages/LandingPage'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
-
-// Dev Pages
-import { TutorDevPage } from './pages/TutorDevPage'
+import { TutorLoginPage } from './pages/auth/TutorLoginPage'
 
 // Layout
 import { AppLayout } from './components/layout/AppLayout'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { TutorPortalLayout } from './components/portal/TutorPortalLayout'
 
 // Pages
 import { HomePage } from './pages/home/HomePage'
@@ -26,6 +25,9 @@ import { AgendaPage } from './pages/agenda/AgendaPage'
 import { ClinicalCarePage } from './pages/clinical/ClinicalCarePage'
 import { HistoryListPage } from './pages/history/HistoryListPage'
 import { HistoryDetailsPage } from './pages/history/HistoryDetailsPage'
+import { TutorPortalHomePage } from './pages/portal/TutorPortalHomePage'
+import { TutorPortalHistoryPage } from './pages/portal/TutorPortalHistoryPage'
+import { TutorPortalHistoryDetailsPage } from './pages/portal/TutorPortalHistoryDetailsPage'
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -77,11 +79,17 @@ export default function App() {
           }
         />
 
-        {/* Tutor Dev Page */}
         <Route
-          path="/tutor-portal"
-          element={<TutorDevPage />}
+          path="/portal/login"
+          element={
+            <PublicRoute>
+              <TutorLoginPage />
+            </PublicRoute>
+          }
         />
+
+        {/* Compatibilidade com rota antiga */}
+        <Route path="/tutor-portal" element={<Navigate to="/portal/login" replace />} />
 
         {/* Protected: OWNER + VET */}
         <Route element={<ProtectedRoute allowedRoles={['OWNER', 'VET']} />}>
@@ -103,7 +111,14 @@ export default function App() {
 
         {/* Protected: TUTOR */}
         <Route element={<ProtectedRoute allowedRoles={['TUTOR']} />}>
-          <Route path="portal" element={<div>Portal do Tutor (em desenvolvimento)</div>} />
+          <Route path="portal" element={<TutorPortalLayout />}>
+            <Route index element={<TutorPortalHomePage />} />
+            <Route path="historico" element={<TutorPortalHistoryPage />} />
+            <Route
+              path="historico/:recordId/pacientes/:patientId"
+              element={<TutorPortalHistoryDetailsPage />}
+            />
+          </Route>
         </Route>
 
         {/* Catch-all */}

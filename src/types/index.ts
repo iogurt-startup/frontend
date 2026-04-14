@@ -281,6 +281,34 @@ export interface TutorAlert {
   date?: string
 }
 
+export interface TutorPortalClinicalRecord {
+  id: string
+  createdAt: string
+  diagnosis?: string | null
+  pendingDiagnosis?: string | null
+  prescriptions?: string | null
+  routineGuidance?: string | null
+  aiSummary?: string | null
+  weightKg?: number | null
+  finalized: boolean
+  vet?: {
+    name: string
+  }
+}
+
+export interface TutorPortalPatientHistory {
+  patient: Patient
+  clinicalRecords: TutorPortalClinicalRecord[]
+  vaccinations: Vaccination[]
+  examFiles: ExamFile[]
+}
+
+export interface CreateTutorAccountResponse {
+  userId: string
+  email: string
+  temporaryPassword: string
+}
+
 // ── Paginated ─────────────────────────────────────
 export interface PaginatedResponse<T> {
   items?: T[]
