@@ -147,6 +147,7 @@ export interface Appointment {
   patientId: string
   vetId: string
   dateTime: string
+  endDateTime?: string | null
   category: AppointmentCategory
   status: AppointmentStatus
   observation?: string | null
@@ -161,6 +162,7 @@ export interface CreateAppointmentRequest {
   patientId: string
   vetId: string
   dateTime: string
+  endDateTime?: string
   category: AppointmentCategory
   observation?: string
 }

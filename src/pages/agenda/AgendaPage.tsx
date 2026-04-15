@@ -32,10 +32,64 @@ const HOURS_GRID = Array.from(
 )
 
 const CATEGORY_COLORS: Record<string, string> = {
-  VACCINATION: 'blue',
-  OBSERVATION: 'yellow',
-  EXAM: 'pink',
-  SURGICAL: 'purple',
+  VACCINATION: 'cyan',
+  OBSERVATION: 'mint',
+  EXAM: 'lavender',
+  SURGICAL: 'yellow',
+}
+
+interface LayoutSlot {
+  appt: Appointment
+  startIdx: number
+  endIdx: number
+  col: number
+  totalCols: number
+}
+
+function computeOverlapLayout(appointments: Appointment[], gridLength: number): LayoutSlot[] {
+  const items = appointments
+    .map((appt) => {
+      const startIdx = getGridIndex(appt.dateTime)
+      const span = getSlotSpan(appt.dateTime, appt.endDateTime)
+      const endIdx = startIdx + span
+      return { appt, startIdx, endIdx }
+    })
+    .filter((item) => item.startIdx >= 0 && item.startIdx < gridLength)
+    .sort((a, b) => a.startIdx - b.startIdx || a.endIdx - b.endIdx)
+
+  const result: LayoutSlot[] = []
+
+  const groups: typeof items[] = []
+  let currentGroup: typeof items = []
+  let groupEnd = -1
+
+  for (const item of items) {
+    if (currentGroup.length === 0 || item.startIdx < groupEnd) {
+      currentGroup.push(item)
+      groupEnd = Math.max(groupEnd, item.endIdx)
+    } else {
+      groups.push(currentGroup)
+      currentGroup = [item]
+      groupEnd = item.endIdx
+    }
+  }
+  if (currentGroup.length > 0) groups.push(currentGroup)
+
+  for (const group of groups) {
+    const columns: number[] = []
+    for (const item of group) {
+      let col = 0
+      while (columns[col] !== undefined && columns[col] > item.startIdx) col++
+      columns[col] = item.endIdx
+      result.push({ ...item, col, totalCols: 0 })
+    }
+    const totalCols = columns.length
+    for (let i = result.length - group.length; i < result.length; i++) {
+      result[i].totalCols = totalCols
+    }
+  }
+
+  return result
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -50,9 +104,23 @@ function getGridIndex(dateTime: string): number {
   return (d.getHours() - START_HOUR) * 2 + (d.getMinutes() >= 30 ? 1 : 0)
 }
 
+function getSlotSpan(startDateTime: string, endDateTime?: string | null): number {
+  if (!endDateTime) return 1
+  const startMs = new Date(startDateTime).getTime()
+  const endMs = new Date(endDateTime).getTime()
+  const slots = Math.round((endMs - startMs) / (30 * 60 * 1000))
+  return Math.max(slots, 1)
+}
+
 function formatTime(dateTime: string): string {
   const d = new Date(dateTime)
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+function formatTimeRange(start: string, end?: string | null): string {
+  const startStr = formatTime(start)
+  if (!end) return startStr
+  return `${startStr} - ${formatTime(end)}`
 }
 
 function formatDateBR(isoDate: string): string {
@@ -95,7 +163,7 @@ function MobileCardList({
             className={`agenda-mobile-card card-${color}`}
             onClick={() => onSelect(appt)}
           >
-            <div className="agenda-mobile-card-time">{formatTime(appt.dateTime)}</div>
+            <div className="agenda-mobile-card-time">{formatTimeRange(appt.dateTime, appt.endDateTime)}</div>
             <div className="agenda-mobile-card-body">
               <span className="agenda-mobile-card-pet">{appt.patient?.name ?? 'Paciente'}</span>
               <span className="agenda-mobile-card-info">
@@ -186,55 +254,67 @@ export function AgendaPage() {
           ))}
 
           <div className="agenda-events">
-            {appointments.map((appt) => {
-              const startIdx = getGridIndex(appt.dateTime)
-              if (startIdx < 0 || startIdx >= HOURS_GRID.length) return null
-              const color = CATEGORY_COLORS[appt.category] ?? 'blue'
+            {computeOverlapLayout(appointments, HOURS_GRID.length).map(
+              ({ appt, startIdx, col, totalCols }) => {
+                const span = getSlotSpan(appt.dateTime, appt.endDateTime)
+                const color = CATEGORY_COLORS[appt.category] ?? 'cyan'
+                const cardHeight = rowH * span - 4
+                const gapPx = 3
+                const pctWidth = 100 / totalCols
+                const leftPct = col * pctWidth
+                const widthCalc = `calc(${pctWidth}% - ${gapPx}px)`
 
-              return (
-                <div
-                  key={appt.id}
-                  className={`agenda-card card-${color}`}
-                  style={{
-                    top: `${startIdx * rowH + 4}px`,
-                    height: `${rowH - 8}px`,
-                  }}
-                  onClick={() => setSelectedAppointment(appt)}
-                >
-                  <div className="agenda-card-header">
-                    {appt.patient?.photoUrl ? (
-                      <img
-                        src={appt.patient.photoUrl}
-                        alt={appt.patient?.name}
-                        className="pet-avatar"
-                      />
-                    ) : (
-                      <div className="pet-avatar pet-avatar-placeholder">
-                        {appt.patient?.name?.charAt(0) ?? '?'}
-                      </div>
-                    )}
-                    <span className="pet-name">{appt.patient?.name ?? 'Paciente'}</span>
-                  </div>
-
-                  <div className="agenda-card-details">
-                    <div className="detail-line">
-                      <span className="detail-label">Atendimento:</span>
-                      <span className="detail-value">
-                        {CATEGORY_LABELS[appt.category] ?? appt.category}
+                return (
+                  <div
+                    key={appt.id}
+                    className={`agenda-card card-${color}`}
+                    style={{
+                      top: `${startIdx * rowH + 2}px`,
+                      height: `${cardHeight}px`,
+                      left: `calc(${leftPct}% + ${col > 0 ? gapPx : 0}px)`,
+                      width: widthCalc,
+                      right: 'auto',
+                    }}
+                    onClick={() => setSelectedAppointment(appt)}
+                  >
+                    <div className="agenda-card-header">
+                      {appt.patient?.photoUrl ? (
+                        <img
+                          src={appt.patient.photoUrl}
+                          alt={appt.patient?.name}
+                          className="pet-avatar"
+                        />
+                      ) : (
+                        <div className="pet-avatar pet-avatar-placeholder">
+                          {appt.patient?.name?.charAt(0) ?? '?'}
+                        </div>
+                      )}
+                      <span className="pet-name">{appt.patient?.name ?? 'Paciente'}</span>
+                      <span className="agenda-card-time">
+                        {formatTimeRange(appt.dateTime, appt.endDateTime)}
                       </span>
                     </div>
-                    <div className="detail-line">
-                      <span className="detail-label">Veterinário:</span>
-                      <span className="detail-value">{appt.vet?.name ?? '—'}</span>
-                    </div>
-                    <div className="detail-line">
-                      <span className="detail-label">Espécie:</span>
-                      <span className="detail-value">{appt.patient?.species ?? '—'}</span>
+
+                    <div className="agenda-card-details">
+                      <div className="detail-line">
+                        <span className="detail-label">Atendimento:</span>
+                        <span className="detail-value">
+                          {CATEGORY_LABELS[appt.category] ?? appt.category}
+                        </span>
+                      </div>
+                      <div className="detail-line">
+                        <span className="detail-label">Veterinário:</span>
+                        <span className="detail-value">{appt.vet?.name ?? '—'}</span>
+                      </div>
+                      <div className="detail-line">
+                        <span className="detail-label">Espécie:</span>
+                        <span className="detail-value">{appt.patient?.species ?? '—'}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              },
+            )}
           </div>
         </div>
       )}

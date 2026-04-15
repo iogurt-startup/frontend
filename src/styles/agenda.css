@@ -92,74 +92,84 @@
 
 .agenda-card {
   position: absolute;
-  left: 10px;
-  right: 20px;
-  border-radius: var(--radius-sm);
-  padding: 12px var(--space-md);
+  border-radius: 6px;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 4px;
   pointer-events: auto;
   cursor: pointer;
   overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: opacity 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
 }
 
 .agenda-card:hover {
-  transform: scale(1.005);
-  box-shadow: var(--shadow-sm);
+  opacity: 0.92;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
-.card-blue { background-color: #E2F5FA; border: 1px solid #7DD3FC; }
-.card-yellow { background-color: #FEF9C3; border: 1px solid #FDE047; }
-.card-pink { background-color: #FDF2F8; border: 1px solid #FBCFE8; }
-.card-purple { background-color: #F8F5FF; border: 1px solid #E9D5FF; }
+.card-cyan     { background-color: #3EC7D8; color: #fff; }
+.card-mint     { background-color: #84D3C7; color: #fff; }
+.card-lavender { background-color: #DBCDF0; color: #3d2e5c; }
+.card-rose     { background-color: #FFA8DC; color: #fff; }
+.card-yellow   { background-color: #FFEBB0; color: #4a4014; }
 
 .agenda-card-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 4px;
+  gap: 8px;
 }
 
 .pet-avatar {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   object-fit: cover;
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
 }
 
 .pet-avatar-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--gray-600);
-  background: var(--gray-100);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .pet-name {
-  font-weight: 600;
-  color: var(--gray-900);
-  font-size: 0.9375rem;
+  font-weight: 700;
+  color: inherit;
+  font-size: 0.8125rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.agenda-card-time {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: inherit;
+  opacity: 0.85;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .agenda-card-details {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  font-size: 0.8125rem;
+  gap: 2px;
+  font-size: 0.75rem;
 }
 
 .detail-line { display: flex; gap: 4px; }
-.detail-label { color: var(--gray-500); }
-.detail-value { color: var(--gray-800); }
+.detail-label { opacity: 0.75; color: inherit; }
+.detail-value { color: inherit; font-weight: 500; }
 
 /* ── Mobile: Card List ───────────────────────────── */
 .agenda-mobile-list {
