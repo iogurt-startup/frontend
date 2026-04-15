@@ -330,7 +330,7 @@ export function TutorPortalHomePage() {
 
           <article className="tutor-card tutor-appointments-card">
             <div className="tutor-card-head">
-              <h2>Ultimos atendimentos</h2>
+              <h2>Últimos atendimentos</h2>
               <button
                 type="button"
                 className="tutor-see-more"
