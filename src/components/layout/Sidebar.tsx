@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Home, PawPrint, Calendar, Clock, LogOut } from 'lucide-react'
+import { Home, PawPrint, Calendar, Clock, LogOut, Settings } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
 import { authService } from '../../lib/authService'
 import '../../styles/layout.css'
@@ -9,6 +9,7 @@ const navItems = [
   { to: '/pacientes', label: 'Pacientes', icon: PawPrint },
   { to: '/agenda', label: 'Agenda', icon: Calendar },
   { to: '/historico', label: 'Histórico', icon: Clock },
+  { to: '/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
 interface SidebarProps {

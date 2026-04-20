@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, Stethoscope, Edit2, PawPrint, User, FileText, ClipboardPlus } from 'lucide-react'
+import { ChevronLeft, Stethoscope, Edit2, PawPrint, User, FileText, ClipboardPlus, Download, FileUp } from 'lucide-react'
 import { api } from '../../lib/api'
 import { clinicalService } from '../../lib/clinicalService'
+import { examService } from '../../lib/examService'
 import { AppointmentsService } from '../../services/appointments.service'
 import { useAuthStore } from '../../stores/authStore'
-import type { Appointment, ClinicalHistoryItem, Patient } from '../../types'
+import { UploadExamModal } from '../../components/UploadExamModal'
+import type { Appointment, ClinicalHistoryItem, Patient, ExamFile } from '../../types'
 import '../../styles/patients.css'
 
-type DetailsTab = 'dados' | 'prontuario'
+type DetailsTab = 'dados' | 'prontuario' | 'exames'
 const IMMEDIATE_APPOINTMENT_WINDOW_MS = 30 * 60 * 1000
 
 function getAppointmentCategoryLabel(category?: string | null) {
@@ -146,11 +148,13 @@ export function PatientDetailsPage() {
   const user = useAuthStore((s) => s.user)
   const [patient, setPatient] = useState<Patient | null>(null)
   const [history, setHistory] = useState<ClinicalHistoryItem[]>([])
+  const [exams, setExams] = useState<ExamFile[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<DetailsTab>('dados')
   const [isStartingCare, setIsStartingCare] = useState(false)
   const [startCareError, setStartCareError] = useState('')
   const [showStartCareModal, setShowStartCareModal] = useState(false)
+  const [showUploadModal, setShowUploadModal] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -161,11 +165,13 @@ export function PatientDetailsPage() {
     Promise.all([
       api.get(`/patients/${id}`),
       clinicalService.getPatientHistory(id),
+      examService.listPatientExams(id),
     ])
-      .then(([patientResponse, historyResponse]) => {
+      .then(([patientResponse, historyResponse, examsResponse]) => {
         if (cancelled) return
         setPatient(patientResponse.data.patient || patientResponse.data)
         setHistory(historyResponse)
+        setExams(examsResponse)
       })
       .catch((err) => {
         console.error('Erro ao buscar paciente:', err)
@@ -278,6 +284,13 @@ export function PatientDetailsPage() {
           type="button"
         >
           Prontuário
+        </button>
+        <button
+          className={`patient-details-tab${activeTab === 'exames' ? ' active' : ''}`}
+          onClick={() => setActiveTab('exames')}
+          type="button"
+        >
+          Exames
         </button>
       </div>
 
@@ -443,6 +456,76 @@ export function PatientDetailsPage() {
         </section>
       )}
 
+      {activeTab === 'exames' && (
+        <section className="patient-records-panel">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b' }}>Exames Anexados</h3>
+            <button
+              type="button"
+              onClick={() => setShowUploadModal(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: 'var(--pink-300)', color: '#fff', border: 'none',
+                padding: '8px 16px', borderRadius: '8px', cursor: 'pointer',
+                fontWeight: 500, fontSize: '0.875rem'
+              }}
+            >
+              <FileUp size={16} />
+              Anexar Exame
+            </button>
+          </div>
+
+          <div className="patient-records-table-wrapper">
+            <table className="patient-records-table">
+              <thead>
+                <tr>
+                  <th>Arquivo</th>
+                  <th>Data do Upload</th>
+                  <th>Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {exams.length > 0 ? (
+                  exams.map((item) => (
+                    <tr key={item.id}>
+                      <td style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {item.fileType === 'pdf' ? (
+                           <FileText size={18} color="#ef4444" />
+                        ) : (
+                           <FileText size={18} color="#3b82f6" />
+                        )}
+                        <span style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                           {item.fileName}
+                        </span>
+                      </td>
+                      <td>{formatDate(item.uploadedAt)}</td>
+                      <td>
+                        <a
+                          href={item.fileUrl}
+                          download={item.fileName}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="patient-records-action"
+                          style={{ display: 'inline-flex', padding: '6px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                        >
+                          <Download size={16} />
+                        </a>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="patient-records-empty">
+                      Nenhum exame anexado a este paciente.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
       {showStartCareModal && (
         <div className="patient-edit-modal-overlay" role="presentation">
           <div className="patient-edit-modal">
@@ -473,6 +556,17 @@ export function PatientDetailsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showUploadModal && (
+        <UploadExamModal 
+           patientId={patient.id} 
+           onClose={() => setShowUploadModal(false)}
+           onSuccess={(exam) => {
+             setExams(prev => [exam, ...prev])
+             setShowUploadModal(false)
+           }}
+        />
       )}
     </div>
   )

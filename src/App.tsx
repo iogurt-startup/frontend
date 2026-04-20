@@ -26,6 +26,7 @@ import { AgendaPage } from './pages/agenda/AgendaPage'
 import { ClinicalCarePage } from './pages/clinical/ClinicalCarePage'
 import { HistoryListPage } from './pages/history/HistoryListPage'
 import { HistoryDetailsPage } from './pages/history/HistoryDetailsPage'
+import { SettingsPage } from './pages/settings/SettingsPage'
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -98,6 +99,7 @@ export default function App() {
             <Route path="agenda" element={<AgendaPage />} />
             <Route path="historico" element={<HistoryListPage />} />
             <Route path="historico/:recordId/pacientes/:patientId" element={<HistoryDetailsPage />} />
+            <Route path="configuracoes" element={<SettingsPage />} />
           </Route>
         </Route>
 
