@@ -392,6 +392,156 @@
   }
 }
 
+/* ── Modal detalhado (cancelar / reagendar) ──────── */
+.agenda-detail-modal {
+  max-width: 460px;
+}
+
+.agenda-detail-sub {
+  margin: 8px 0 0;
+  color: var(--gray-500);
+  font-size: 0.9375rem;
+}
+
+.agenda-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+  width: 100%;
+}
+
+.agenda-action-btn {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.agenda-action-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.agenda-action-btn:active {
+  transform: translateY(0);
+}
+
+.agenda-action-atender {
+  background: var(--pink-300);
+  color: white;
+}
+
+.agenda-action-reagendar {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+}
+
+.agenda-action-cancelar {
+  background: transparent;
+  color: #e53e3e;
+  border: 1px solid #fed7d7;
+}
+
+.agenda-action-cancelar:hover {
+  background: #fff5f5;
+}
+
+.agenda-action-fechar {
+  margin-top: 12px;
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.agenda-action-fechar:hover {
+  color: var(--gray-600);
+}
+
+/* Form elements inside modal */
+.agenda-form-group {
+  width: 100%;
+  margin-top: 16px;
+  text-align: left;
+}
+
+.agenda-form-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  margin-bottom: 6px;
+}
+
+.agenda-form-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.agenda-form-textarea:focus {
+  border-color: var(--color-primary);
+}
+
+.agenda-form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  background: white;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.agenda-form-input:focus {
+  border-color: var(--color-primary);
+}
+
+.agenda-form-error {
+  display: block;
+  margin-top: 8px;
+  color: #e53e3e;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.agenda-reschedule-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Danger variant for cancel button */
+.agenda-confirm-actions .primary.danger {
+  background: #e53e3e;
+}
+
+.agenda-confirm-actions .primary.danger:hover {
+  background: #c53030;
+}
+
 /* ═══════════════════════════════════════════════════
    Responsivo — Agenda + Modal de agendamento
    ═══════════════════════════════════════════════════ */
