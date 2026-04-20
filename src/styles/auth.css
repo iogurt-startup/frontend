@@ -160,6 +160,22 @@
   transform: scale(0.95);
 }
 
+.tutor-auth-back-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--pink-100);
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(236, 111, 165, 0.12);
+  left: 14px;
+  top: 14px;
+}
+
+.tutor-auth-back-btn:hover {
+  background: #fff4fa;
+  border-color: var(--pink-200);
+}
+
 /* ── Logo ─────────────────────────────────────────── */
 .auth-logo {
   margin-bottom: var(--space-2xl);

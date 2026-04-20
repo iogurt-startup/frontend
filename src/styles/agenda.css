@@ -116,6 +116,13 @@
 .card-rose     { background-color: #FFA8DC; color: #fff; }
 .card-yellow   { background-color: #FFEBB0; color: #4a4014; }
 
+/* Desktop cards use the softer shade seen on the left side of mobile cards. */
+.agenda-card.card-cyan     { background-color: #9FE3EC; color: #2e5963; }
+.agenda-card.card-mint     { background-color: #C2EAD8; color: #2d5f54; }
+.agenda-card.card-lavender { background-color: #EEE6FA; color: #4f3f66; }
+.agenda-card.card-rose     { background-color: #FFD9EB; color: #6d4957; }
+.agenda-card.card-yellow   { background-color: #FFF4CC; color: #5b4c1b; }
+
 .agenda-card-header {
   display: flex;
   align-items: center;

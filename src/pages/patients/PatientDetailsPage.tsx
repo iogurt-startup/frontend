@@ -1,13 +1,33 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft, Stethoscope, Edit2, PawPrint, User, FileText, ClipboardPlus, Download, FileUp } from 'lucide-react'
+import {
+  CheckCircle2,
+  ChevronLeft,
+  ClipboardPlus,
+  Copy,
+  Download,
+  Edit2,
+  FileText,
+  FileUp,
+  KeyRound,
+  PawPrint,
+  Stethoscope,
+  User,
+} from 'lucide-react'
 import { api } from '../../lib/api'
 import { clinicalService } from '../../lib/clinicalService'
 import { examService } from '../../lib/examService'
 import { AppointmentsService } from '../../services/appointments.service'
+import { TutorsService } from '../../services/tutors.service'
 import { useAuthStore } from '../../stores/authStore'
 import { UploadExamModal } from '../../components/UploadExamModal'
-import type { Appointment, ClinicalHistoryItem, Patient, ExamFile } from '../../types'
+import type {
+  Appointment,
+  ClinicalHistoryItem,
+  CreateTutorAccountResponse,
+  ExamFile,
+  Patient,
+} from '../../types'
 import '../../styles/patients.css'
 
 type DetailsTab = 'dados' | 'prontuario' | 'exames'
@@ -155,6 +175,13 @@ export function PatientDetailsPage() {
   const [startCareError, setStartCareError] = useState('')
   const [showStartCareModal, setShowStartCareModal] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [showTutorAccessModal, setShowTutorAccessModal] = useState(false)
+  const [tutorAccessEmail, setTutorAccessEmail] = useState('')
+  const [creatingTutorAccess, setCreatingTutorAccess] = useState(false)
+  const [tutorAccessError, setTutorAccessError] = useState('')
+  const [createdTutorAccess, setCreatedTutorAccess] =
+    useState<CreateTutorAccountResponse | null>(null)
+  const [copiedPassword, setCopiedPassword] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -185,6 +212,10 @@ export function PatientDetailsPage() {
     }
   }, [id])
 
+  useEffect(() => {
+    setTutorAccessEmail(patient?.tutor?.email ?? '')
+  }, [patient?.tutor?.id])
+
   if (loading) {
     return (
       <div className="patient-details-loading">
@@ -199,6 +230,58 @@ export function PatientDetailsPage() {
 
   const address = extractAddress(patient.tutor?.address)
   const visibleHistory = history.filter((item) => item.finalized)
+
+  async function handleCreateTutorAccess() {
+    if (!patient?.tutor?.id) {
+      setTutorAccessError('Tutor nao encontrado para este paciente.')
+      return
+    }
+
+    if (!tutorAccessEmail.trim()) {
+      setTutorAccessError('Informe um e-mail valido para criar o acesso do tutor.')
+      return
+    }
+
+    setTutorAccessError('')
+    setCreatingTutorAccess(true)
+
+    try {
+      const response = await TutorsService.createAccount(patient.tutor.id, tutorAccessEmail.trim())
+
+      setCreatedTutorAccess(response)
+
+      setPatient((current) => {
+        if (!current?.tutor) return current
+        return {
+          ...current,
+          tutor: {
+            ...current.tutor,
+            email: response.email,
+            userId: response.userId,
+          },
+        }
+      })
+    } catch (err: any) {
+      setTutorAccessError(
+        err.response?.data?.message ||
+          'Nao foi possivel criar o acesso do tutor.',
+      )
+    } finally {
+      setCreatingTutorAccess(false)
+    }
+  }
+
+  async function handleCopyPassword() {
+    if (!createdTutorAccess) return
+
+    try {
+      await navigator.clipboard.writeText(createdTutorAccess.temporaryPassword)
+      setCopiedPassword(true)
+      setTimeout(() => setCopiedPassword(false), 1800)
+    } catch {
+      setCopiedPassword(false)
+    }
+  }
 
   async function handleStartCare() {
     if (!patient || !user) {
@@ -350,9 +433,33 @@ export function PatientDetailsPage() {
             </div>
           </div>
 
-          <div className="patient-details-section-title tutor">
-            <User size={22} />
-            <h2>Tutor</h2>
+          <div className="patient-details-section-title tutor with-action">
+            <div className="patient-details-section-title-group">
+              <User size={22} />
+              <h2>Tutor</h2>
+            </div>
+
+            {patient.tutor?.userId ? (
+              <span className="patient-details-tutor-access-tag">
+                <CheckCircle2 size={15} />
+                Acesso ativo
+              </span>
+            ) : (
+              <button
+                type="button"
+                className="patient-details-tutor-access-btn"
+                onClick={() => {
+                  setTutorAccessEmail(patient.tutor?.email ?? '')
+                  setTutorAccessError('')
+                  setCreatedTutorAccess(null)
+                  setCopiedPassword(false)
+                  setShowTutorAccessModal(true)
+                }}
+              >
+                <KeyRound size={16} />
+                Gerar acesso ao portal
+              </button>
+            )}
           </div>
 
           <h3 className="patient-details-subtitle">Dados básicos</h3>
@@ -559,14 +666,101 @@ export function PatientDetailsPage() {
       )}
 
       {showUploadModal && (
-        <UploadExamModal 
-           patientId={patient.id} 
-           onClose={() => setShowUploadModal(false)}
-           onSuccess={(exam) => {
-             setExams(prev => [exam, ...prev])
-             setShowUploadModal(false)
-           }}
+        <UploadExamModal
+          patientId={patient.id}
+          onClose={() => setShowUploadModal(false)}
+          onSuccess={(exam) => {
+            setExams((prev) => [exam, ...prev])
+            setShowUploadModal(false)
+          }}
         />
+      )}
+
+      {showTutorAccessModal && (
+        <div className="patient-edit-modal-overlay" role="presentation">
+          <div className="patient-edit-modal">
+            <KeyRound className="patient-edit-modal-icon save" />
+            <h3>Acesso do tutor</h3>
+
+            {createdTutorAccess ? (
+              <>
+                <p>Conta criada com sucesso. Guarde esta senha temporaria com seguranca.</p>
+
+                <div className="patient-details-access-result">
+                  <div>
+                    <span>E-mail</span>
+                    <strong>{createdTutorAccess.email}</strong>
+                  </div>
+                  <div>
+                    <span>Senha temporaria</span>
+                    <strong>{createdTutorAccess.temporaryPassword}</strong>
+                  </div>
+                </div>
+
+                {copiedPassword ? (
+                  <p className="patient-details-access-feedback success">
+                    Senha copiada para a area de transferencia.
+                  </p>
+                ) : null}
+
+                <div className="patient-edit-modal-actions">
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={() => setShowTutorAccessModal(false)}
+                  >
+                    Fechar
+                  </button>
+                  <button
+                    type="button"
+                    className="confirm save"
+                    onClick={() => void handleCopyPassword()}
+                  >
+                    <Copy size={15} />
+                    Copiar senha
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p>Defina o e-mail de acesso para gerar a senha temporaria do tutor.</p>
+
+                <div className="patient-details-access-form">
+                  <label htmlFor="tutor-access-email">E-mail de acesso</label>
+                  <input
+                    id="tutor-access-email"
+                    type="email"
+                    value={tutorAccessEmail}
+                    onChange={(event) => setTutorAccessEmail(event.target.value)}
+                    placeholder="tutor@exemplo.com"
+                  />
+                  {tutorAccessError ? (
+                    <span className="patient-details-access-feedback">{tutorAccessError}</span>
+                  ) : null}
+                </div>
+
+                <div className="patient-edit-modal-actions">
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={() => setShowTutorAccessModal(false)}
+                    disabled={creatingTutorAccess}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    className="confirm save"
+                    onClick={() => void handleCreateTutorAccess()}
+                    disabled={creatingTutorAccess}
+                  >
+                    {creatingTutorAccess ? 'Gerando...' : 'Gerar senha'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )

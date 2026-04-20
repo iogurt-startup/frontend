@@ -3,7 +3,7 @@ import { Building2, Check, LoaderCircle, UserRound } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
 import { authService } from '../../lib/authService'
 import { clinicService } from '../../lib/clinicService'
-import type { Clinic, User } from '../../types'
+import type { User } from '../../types'
 import '../../styles/settings.css'
 
 function patchCurrentUser(partial: Partial<User>) {
@@ -21,7 +21,6 @@ export function SettingsPage() {
   const isOwner = user?.role === 'OWNER'
 
   const [loading, setLoading] = useState(true)
-  const [clinic, setClinic] = useState<Clinic | null>(null)
   const [profile, setProfile] = useState<User | null>(null)
 
   const [clinicForm, setClinicForm] = useState({ name: '', cnpj: '', address: '', phone: '' })
@@ -50,7 +49,6 @@ export function SettingsPage() {
         setProfileForm({ name: meRes.name ?? '', crmv: meRes.crmv ?? '' })
 
         if (clinicRes) {
-          setClinic(clinicRes)
           setClinicForm({
             name: clinicRes.name ?? '',
             cnpj: clinicRes.cnpj ?? '',
@@ -87,7 +85,12 @@ export function SettingsPage() {
         address: clinicForm.address.trim() || null,
         phone: clinicForm.phone.trim() || null,
       })
-      setClinic(updated)
+      setClinicForm({
+        name: updated.name ?? '',
+        cnpj: updated.cnpj ?? '',
+        address: updated.address ?? '',
+        phone: updated.phone ?? '',
+      })
       setClinicFeedback({ kind: 'success', message: 'Dados da clínica atualizados.' })
     } catch (err: any) {
       setClinicFeedback({
