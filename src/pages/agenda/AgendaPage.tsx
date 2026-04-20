@@ -123,6 +123,12 @@ function formatTimeRange(start: string, end?: string | null): string {
   return `${startStr} - ${formatTime(end)}`
 }
 
+function getNextTimeSlot(time: string): string {
+  const idx = TIME_SLOTS.indexOf(time)
+  if (idx < 0 || idx >= TIME_SLOTS.length - 1) return ''
+  return TIME_SLOTS[idx + 1]
+}
+
 function formatDateBR(isoDate: string): string {
   const [y, m, d] = isoDate.split('-')
   return `${d}/${m}/${y}`
@@ -185,6 +191,11 @@ const TIME_SLOTS = [
   '16:00', '16:30', '17:00', '17:30',
 ]
 
+function getActionErrorMessage(err: unknown, fallback: string): string {
+  if (err instanceof Error && err.message.trim()) return err.message
+  return fallback
+}
+
 export function AgendaPage() {
   const navigate = useNavigate()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -199,6 +210,7 @@ export function AgendaPage() {
   const [cancelReason, setCancelReason] = useState('')
   const [rescheduleDate, setRescheduleDate] = useState('')
   const [rescheduleStart, setRescheduleStart] = useState('')
+  const [rescheduleEnd, setRescheduleEnd] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
   const [actionError, setActionError] = useState('')
 
@@ -215,6 +227,7 @@ export function AgendaPage() {
     setCancelReason('')
     setRescheduleDate('')
     setRescheduleStart('')
+    setRescheduleEnd('')
     setActionLoading(false)
     setActionError('')
   }
@@ -236,18 +249,35 @@ export function AgendaPage() {
 
   const handleOpenReschedule = () => {
     if (!selectedAppointment) return
+    if (selectedAppointment.status !== 'SCHEDULED') {
+      setActionError('Só é possível reagendar agendamentos com status SCHEDULED.')
+      return
+    }
+
     const d = new Date(selectedAppointment.dateTime)
     const year = d.getFullYear()
     const month = String(d.getMonth() + 1).padStart(2, '0')
     const day = String(d.getDate()).padStart(2, '0')
+    const start = formatTime(selectedAppointment.dateTime)
+    const currentEnd = selectedAppointment.endDateTime
+      ? formatTime(selectedAppointment.endDateTime)
+      : ''
+    const defaultEnd = currentEnd && currentEnd > start ? currentEnd : getNextTimeSlot(start)
+
     setRescheduleDate(`${year}-${month}-${day}`)
-    setRescheduleStart(formatTime(selectedAppointment.dateTime))
+    setRescheduleStart(start)
+    setRescheduleEnd(defaultEnd)
     setModalView('reschedule')
     setActionError('')
   }
 
   const handleConfirmCancel = async () => {
     if (!selectedAppointment) return
+    if (selectedAppointment.status !== 'SCHEDULED') {
+      setActionError('Só é possível cancelar agendamentos com status SCHEDULED.')
+      return
+    }
+
     if (!cancelReason.trim()) {
       setActionError('A justificativa é obrigatória para cancelar.')
       return
@@ -258,8 +288,8 @@ export function AgendaPage() {
       await cancelAppointment(selectedAppointment.id, cancelReason.trim())
       resetModalState()
       showSuccessToast('Agendamento cancelado com sucesso')
-    } catch {
-      setActionError('Erro ao cancelar agendamento.')
+    } catch (err: unknown) {
+      setActionError(getActionErrorMessage(err, 'Erro ao cancelar agendamento.'))
     } finally {
       setActionLoading(false)
     }
@@ -267,19 +297,43 @@ export function AgendaPage() {
 
   const handleConfirmReschedule = async () => {
     if (!selectedAppointment) return
-    if (!rescheduleDate || !rescheduleStart) {
-      setActionError('Preencha data e horário de início.')
+    if (!rescheduleDate || !rescheduleStart || !rescheduleEnd) {
+      setActionError('Preencha data, horário de início e horário de fim.')
       return
     }
+    if (rescheduleEnd <= rescheduleStart) {
+      setActionError('O horário de fim deve ser posterior ao horário de início.')
+      return
+    }
+
     setActionLoading(true)
     setActionError('')
     try {
-      const newDateTime = new Date(`${rescheduleDate}T${rescheduleStart}`).toISOString()
-      await rescheduleAppointment(selectedAppointment.id, newDateTime)
+      const newStartDate = new Date(`${rescheduleDate}T${rescheduleStart}:00`)
+      const newEndDate = new Date(`${rescheduleDate}T${rescheduleEnd}:00`)
+
+      if (Number.isNaN(newStartDate.getTime()) || Number.isNaN(newEndDate.getTime())) {
+        setActionError('Data ou horário inválido para reagendamento.')
+        return
+      }
+
+      if (newStartDate <= new Date()) {
+        setActionError('A nova data deve ser no futuro.')
+        return
+      }
+
+      if (newEndDate <= newStartDate) {
+        setActionError('O horário de fim deve ser posterior ao horário de início.')
+        return
+      }
+
+      const newDateTime = newStartDate.toISOString()
+      const newEndDateTime = newEndDate.toISOString()
+      await rescheduleAppointment(selectedAppointment.id, newDateTime, newEndDateTime)
       resetModalState()
       showSuccessToast('Agendamento reagendado com sucesso')
-    } catch {
-      setActionError('Erro ao reagendar.')
+    } catch (err: unknown) {
+      setActionError(getActionErrorMessage(err, 'Erro ao reagendar.'))
     } finally {
       setActionLoading(false)
     }
@@ -445,13 +499,36 @@ export function AgendaPage() {
                   <button type="button" className="agenda-action-btn agenda-action-atender" onClick={handleStartCare}>
                     Iniciar Atendimento
                   </button>
-                  <button type="button" className="agenda-action-btn agenda-action-reagendar" onClick={handleOpenReschedule}>
+                  <button
+                    type="button"
+                    className="agenda-action-btn agenda-action-reagendar"
+                    onClick={handleOpenReschedule}
+                    disabled={selectedAppointment.status !== 'SCHEDULED'}
+                    title={selectedAppointment.status !== 'SCHEDULED' ? 'Somente agendamentos com status SCHEDULED podem ser reagendados.' : undefined}
+                  >
                     Reagendar
                   </button>
-                  <button type="button" className="agenda-action-btn agenda-action-cancelar" onClick={() => { setModalView('cancel'); setActionError('') }}>
+                  <button
+                    type="button"
+                    className="agenda-action-btn agenda-action-cancelar"
+                    onClick={() => {
+                      if (selectedAppointment.status !== 'SCHEDULED') {
+                        setActionError('Só é possível cancelar agendamentos com status SCHEDULED.')
+                        return
+                      }
+                      setModalView('cancel')
+                      setActionError('')
+                    }}
+                    disabled={selectedAppointment.status !== 'SCHEDULED'}
+                    title={selectedAppointment.status !== 'SCHEDULED' ? 'Somente agendamentos com status SCHEDULED podem ser cancelados.' : undefined}
+                  >
                     Cancelar Agendamento
                   </button>
                 </div>
+
+                {actionError && (
+                  <span className="agenda-form-error">{actionError}</span>
+                )}
 
                 <button type="button" className="agenda-action-fechar" onClick={resetModalState}>
                   Fechar
@@ -503,26 +580,46 @@ export function AgendaPage() {
                   {selectedAppointment.patient?.name} — {formatTimeRange(selectedAppointment.dateTime, selectedAppointment.endDateTime)}
                 </p>
 
-                <div className="agenda-reschedule-grid">
-                  <div className="agenda-form-group">
-                    <label className="agenda-form-label">Nova Data</label>
-                    <input
-                      type="date"
-                      className="agenda-form-input"
-                      value={rescheduleDate}
-                      onChange={(e) => setRescheduleDate(e.target.value)}
-                    />
-                  </div>
+                <div className="agenda-form-group">
+                  <label className="agenda-form-label">Nova Data</label>
+                  <input
+                    type="date"
+                    className="agenda-form-input"
+                    value={rescheduleDate}
+                    onChange={(e) => setRescheduleDate(e.target.value)}
+                  />
+                </div>
 
+                <div className="agenda-reschedule-grid">
                   <div className="agenda-form-group">
                     <label className="agenda-form-label">Novo Horário</label>
                     <select
                       className="agenda-form-input"
                       value={rescheduleStart}
-                      onChange={(e) => setRescheduleStart(e.target.value)}
+                      onChange={(e) => {
+                        const start = e.target.value
+                        setRescheduleStart(start)
+                        if (rescheduleEnd && rescheduleEnd <= start) {
+                          setRescheduleEnd('')
+                        }
+                      }}
                     >
                       <option value="">Selecionar</option>
                       {TIME_SLOTS.map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="agenda-form-group">
+                    <label className="agenda-form-label">Novo Fim</label>
+                    <select
+                      className="agenda-form-input"
+                      value={rescheduleEnd}
+                      onChange={(e) => setRescheduleEnd(e.target.value)}
+                    >
+                      <option value="">Selecionar</option>
+                      {TIME_SLOTS.filter((t) => t > rescheduleStart).map((t) => (
                         <option key={t} value={t}>{t}</option>
                       ))}
                     </select>

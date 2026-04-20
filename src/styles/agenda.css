@@ -355,7 +355,7 @@
 .agenda-confirm-actions {
   margin-top: 24px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(96px, 124px) 1fr;
   align-items: center;
   gap: 14px;
 }
@@ -363,11 +363,17 @@
 .agenda-confirm-actions button {
   border: none;
   border-radius: 8px;
-  height: 42px;
-  padding: 0 16px;
+  min-height: 42px;
+  padding: 10px 16px;
   font-family: inherit;
   font-size: 1rem;
+  line-height: 1.25;
   font-weight: 600;
+  text-align: center;
+  white-space: normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
@@ -423,13 +429,18 @@
   transition: opacity 0.15s, transform 0.15s;
 }
 
-.agenda-action-btn:hover {
+.agenda-action-btn:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
 }
 
-.agenda-action-btn:active {
+.agenda-action-btn:active:not(:disabled) {
   transform: translateY(0);
+}
+
+.agenda-action-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .agenda-action-atender {
@@ -606,7 +617,12 @@
   }
 
   .agenda-confirm-actions button {
-    height: 42px;
+    min-height: 42px;
+  }
+
+  .agenda-confirm-actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   /* Modal de agendamento */
