@@ -8,7 +8,6 @@ export class LoginPage {
   private passwordInput = By.id('login-password');
   private submitButton = By.css('.auth-submit');
   private errorMessage = By.className('form-error');
-  private googleButton = By.className('auth-google-btn');
 
   constructor(driver: WebDriver) {
     this.driver = driver;
@@ -19,8 +18,8 @@ export class LoginPage {
   }
 
   async login(email: string, password: string) {
-    await this.driver.wait(until.elementLocated(this.emailInput), 10000);
-    const emailField = await this.driver.findElement(this.emailInput);
+    const emailField = await this.driver.wait(until.elementLocated(this.emailInput), 10000);
+    await this.driver.wait(until.elementIsVisible(emailField), 5000);
     await emailField.clear();
     await emailField.sendKeys(email);
     
@@ -28,16 +27,12 @@ export class LoginPage {
     await passwordField.clear();
     await passwordField.sendKeys(password);
     
-    await this.driver.findElement(this.submitButton).click();
+    const btn = await this.driver.findElement(this.submitButton);
+    await btn.click();
   }
 
   async getErrorMessage() {
     const errorElement = await this.driver.wait(until.elementLocated(this.errorMessage), 5000);
     return await errorElement.getText();
-  }
-
-  async clickGoogleLogin() {
-    await this.driver.wait(until.elementLocated(this.googleButton), 5000);
-    await this.driver.findElement(this.googleButton).click();
   }
 }

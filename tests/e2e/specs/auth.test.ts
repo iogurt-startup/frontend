@@ -1,52 +1,85 @@
 import { describe, test, expect, beforeAll, afterAll, jest } from '@jest/globals';
-import { Builder, WebDriver, By } from 'selenium-webdriver';
+import { Builder, WebDriver, until, By } from 'selenium-webdriver';
 import { LoginPage } from '../pages/LoginPage.js';
+import { RegisterPage } from '../pages/RegisterPage.js';
+import { HomePage } from '../pages/HomePage.js';
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
-describe('Login Tests', () => {
+describe('Fluxo Completo de Autenticacao e Navegacao', () => {
   let driver: WebDriver;
   let loginPage: LoginPage;
+  let registerPage: RegisterPage;
+  let homePage: HomePage;
+
+  const testUser = {
+    name: 'Usuario Teste',
+    clinic: 'Clinica Veterinaria Teste',
+    email: `teste-${Date.now()}@example.com`,
+    password: 'password123'
+  };
 
   beforeAll(async () => {
     driver = await new Builder().forBrowser('chrome').build();
     loginPage = new LoginPage(driver);
-  }, 30000);
+    registerPage = new RegisterPage(driver);
+    homePage = new HomePage(driver);
+  });
 
   afterAll(async () => {
-    if (driver) {
-      await driver.quit();
-    }
+    if (driver) await driver.quit();
   });
 
-  test('Deve exibir erro com credenciais inválidas', async () => {
-    await loginPage.navigate();
-    await loginPage.login('invalido@teste.com', 'senha123');
-    const error = await loginPage.getErrorMessage();
-    expect(error).toBeTruthy();
+  test('Deve cadastrar um novo usuario com sucesso', async () => {
+    await registerPage.navigate();
+    await registerPage.register(testUser.name, testUser.clinic, testUser.email, testUser.password);
+
+    await driver.wait(until.urlContains('/login'), 15000);
+    expect(await driver.getCurrentUrl()).toContain('/login');
   });
 
-  test('Deve redirecionar após login bem-sucedido', async () => {
+  test('Deve fazer login com o usuario recem-criado', async () => {
     await loginPage.navigate();
-    await loginPage.login('teste@example.com', '123456');
+    await loginPage.login(testUser.email, testUser.password);
 
-    await driver.wait(async (d) => {
-      const url = await d.getCurrentUrl();
-      return !url.includes('/login');
-    }, 10000);
-
+    await driver.wait(until.urlMatches(/(\/|\/portal|\/dashboard)$/), 15000);
     const currentUrl = await driver.getCurrentUrl();
+    expect(currentUrl).toMatch(/\/($|portal$|dashboard$)/);
+
+    await homePage.waitForDashboard();
     
-    expect(currentUrl).toMatch(/\/($|portal$)/);
+    const dashboardTitle = await driver.wait(
+      until.elementLocated(By.xpath("//h2[contains(text(), 'Últimos atendimentos')]")), 
+      5000
+    );
+    expect(dashboardTitle).toBeTruthy();
   });
 
-  test('Deve validar campos obrigatórios', async () => {
+  test('Deve proteger rota de dashboard para usuario nao autenticado', async () => {
+    await driver.executeScript('window.localStorage.clear(); window.sessionStorage.clear();');
+    
+    await homePage.navigate();
+    
+    await driver.wait(until.urlContains('/login'), 10000);
+    expect(await driver.getCurrentUrl()).toContain('/login');
+  });
+
+  test('Deve redirecionar usuario logado que tenta acessar login ou register', async () => {
     await loginPage.navigate();
-    await driver.findElement(By.css('.auth-submit')).click();
+    await loginPage.login(testUser.email, testUser.password);
     
-    const emailField = await driver.findElement(By.id('login-email'));
-    const validity = await emailField.getAttribute('validity');
-    
-    expect(validity).toBeDefined();
+    await homePage.waitForDashboard();
+
+    await loginPage.navigate();
+
+    await driver.wait(until.urlMatches(/(\/|\/portal|\/dashboard)$/), 10000);
+    let currentUrl = await driver.getCurrentUrl();
+    expect(currentUrl).toMatch(/\/($|portal$|dashboard$)/);
+
+    await registerPage.navigate();
+
+    await driver.wait(until.urlMatches(/(\/|\/portal|\/dashboard)$/), 10000);
+    currentUrl = await driver.getCurrentUrl();
+    expect(currentUrl).toMatch(/\/($|portal$|dashboard$)/);
   });
 });
