@@ -31,11 +31,13 @@ const HOURS_GRID = Array.from(
   },
 )
 
-const CATEGORY_COLORS: Record<string, string> = {
-  VACCINATION: 'cyan',
-  OBSERVATION: 'mint',
-  EXAM: 'lavender',
-  SURGICAL: 'yellow',
+const APPOINTMENT_PALETTE = ['cyan', 'rose', 'butter', 'mint', 'pearl', 'lavender'] as const
+
+const CATEGORY_COLOR_OFFSET: Record<string, number> = {
+  VACCINATION: 0,
+  OBSERVATION: 1,
+  EXAM: 5,
+  SURGICAL: 2,
 }
 
 interface LayoutSlot {
@@ -134,6 +136,21 @@ function formatDateBR(isoDate: string): string {
   return `${d}/${m}/${y}`
 }
 
+function hashColorSeed(value: string): number {
+  let hash = 0
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash * 31 + value.charCodeAt(i)) >>> 0
+  }
+  return hash
+}
+
+function getAppointmentColor(appointment: Appointment): (typeof APPOINTMENT_PALETTE)[number] {
+  const seed = `${appointment.id}:${appointment.patientId}:${appointment.dateTime}`
+  const baseIndex = hashColorSeed(seed) % APPOINTMENT_PALETTE.length
+  const categoryOffset = CATEGORY_COLOR_OFFSET[appointment.category] ?? 0
+  return APPOINTMENT_PALETTE[(baseIndex + categoryOffset) % APPOINTMENT_PALETTE.length]
+}
+
 function shiftDate(isoDate: string, days: number): string {
   const d = new Date(isoDate + 'T12:00:00')
   d.setDate(d.getDate() + days)
@@ -161,7 +178,7 @@ function MobileCardList({
   return (
     <div className="agenda-mobile-list">
       {sorted.map((appt) => {
-        const color = CATEGORY_COLORS[appt.category] ?? 'blue'
+        const color = getAppointmentColor(appt)
         return (
           <button
             key={appt.id}
@@ -392,7 +409,7 @@ export function AgendaPage() {
             {computeOverlapLayout(appointments, HOURS_GRID.length).map(
               ({ appt, startIdx, col, totalCols }) => {
                 const span = getSlotSpan(appt.dateTime, appt.endDateTime)
-                const color = CATEGORY_COLORS[appt.category] ?? 'cyan'
+                const color = getAppointmentColor(appt)
                 const cardHeight = rowH * span - 4
                 const gapPx = 3
                 const pctWidth = 100 / totalCols

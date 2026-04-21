@@ -14,11 +14,16 @@ export function ProtectedRoute({ allowedRoles }: Props) {
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    // Redirect TUTOR to portal, others to home
+    // Redirect each role to the appropriate base area
     if (user.role === 'TUTOR') {
       return <Navigate to="/portal" replace />
     }
-    return <Navigate to="/" replace />
+
+    if (user.role === 'OWNER') {
+      return <Navigate to="/dashboard" replace />
+    }
+
+    return <Navigate to="/home" replace />
   }
 
   return <Outlet />

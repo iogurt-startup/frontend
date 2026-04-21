@@ -55,7 +55,7 @@ export function RegisterPage() {
       setAuth(data.user, data.accessToken, data.refreshToken)
       navigate('/login') // Força o VET a logar se precisar, ou vai direto. No Google é OWNER por padrão se novo.
       // Wait, let's navigate to home since setAuth is called.
-      navigate(data.user.role === 'TUTOR' ? '/portal' : '/')
+      navigate(data.user.role === 'TUTOR' ? '/portal' : '/home')
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao autenticar com o Google.')
     } finally {
