@@ -264,6 +264,48 @@ export interface AdminMetrics {
   totalPatients: number
   appointmentsThisWeek: number
   appointmentsThisMonth: number
+  timeline: {
+    past: number
+    future: number
+  }
+  week: {
+    total: number
+    scheduled: number
+    inProgress: number
+    completed: number
+    cancelled: number
+  }
+  month: {
+    total: number
+    scheduled: number
+    inProgress: number
+    completed: number
+    cancelled: number
+  }
+  categories: {
+    week: {
+      observation: number
+      vaccination: number
+      exam: number
+      surgical: number
+    }
+    month: {
+      observation: number
+      vaccination: number
+      exam: number
+      surgical: number
+    }
+  }
+}
+
+export interface AdminAppointmentsTrendPoint {
+  date: string
+  totalAppointments: number
+}
+
+export interface AdminAppointmentsTrendResponse {
+  days: number
+  trend: AdminAppointmentsTrendPoint[]
 }
 
 // ── Portal ────────────────────────────────────────
