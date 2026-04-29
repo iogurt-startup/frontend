@@ -262,6 +262,22 @@
   margin-bottom: 10px;
 }
 
+.care-previous-list li {
+  padding-right: 4px;
+}
+
+.care-previous-list span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--gray-800);
+  font-weight: 700;
+}
+
+.care-previous-list p {
+  margin: 0;
+  line-height: 1.55;
+}
+
 .care-empty-copy {
   color: var(--gray-500);
 }
