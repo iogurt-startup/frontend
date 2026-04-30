@@ -68,6 +68,24 @@ function getFirstName(fullName?: string | null) {
   return fullName.trim().split(' ')[0] || 'Tutor'
 }
 
+function parseMetaMessage(message: string): string {
+  if (!message) return ''
+  if (message.startsWith('__IOUGURT_META__:')) {
+    try {
+      const jsonStr = message.replace('__IOUGURT_META__:', '').trim()
+      const data = JSON.parse(jsonStr)
+      const parts = []
+      if (data.observations && data.observations.trim()) parts.push(data.observations.trim())
+      if (data.additionalObservations && data.additionalObservations.trim()) parts.push(data.additionalObservations.trim())
+      if (parts.length > 0) return parts.join(' - ')
+      return ''
+    } catch {
+      return ''
+    }
+  }
+  return message
+}
+
 function buildFallbackAppointments(records: TutorPortalClinicalRecord[]) {
   return records.slice(0, 5).map((record) => ({
     id: record.id,
@@ -105,8 +123,10 @@ function buildCareItems(
     (item) => item.type === 'vet_recommendation' && item.patientName === selectedPetName,
   )
 
-  const recommendationText = recommendation
-    ? `Recomendacoes atuais: ${recommendation.message}`
+  const parsedMessage = recommendation ? parseMetaMessage(recommendation.message) : ''
+
+  const recommendationText = parsedMessage
+    ? `Recomendacoes atuais: ${parsedMessage}`
     : 'Recomendacoes atuais: acompanhar rotina de cuidados conforme orientacao veterinaria.'
 
   return [nextAppointmentText, vaccineText, recommendationText]
@@ -362,20 +382,38 @@ export function TutorPortalHomePage() {
 
         <aside className="tutor-care-column">
           <article className="tutor-card tutor-care-card">
-            <h2>
-              <span className="tutor-care-icon">
-                <PawPrint size={14} />
-              </span>
-              Iougurt Care
-            </h2>
+            <div className="tutor-care-head">
+              <h2>
+                <span className="tutor-care-icon">
+                  <PawPrint size={14} />
+                </span>
+                Iougurt Care
+              </h2>
+              <button
+                type="button"
+                className="tutor-see-more"
+                onClick={() => navigate('/portal/cuidados')}
+              >
+                <Plus size={16} />
+                Ver tudo
+              </button>
+            </div>
 
-            <p>Ola! Aqui estao as proximas informacoes importantes sobre o seu pet:</p>
+            <p>Olá! Aqui estão as próximas informações importantes sobre o seu pet:</p>
 
             <ul>
               {careItems.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
+
+            <button
+              type="button"
+              className="tutor-care-cta"
+              onClick={() => navigate('/portal/cuidados')}
+            >
+              Abrir painel completo
+            </button>
           </article>
         </aside>
       </div>
