@@ -11,8 +11,32 @@ export interface User {
   name: string
   role: Role
   avatarUrl?: string | null
+  crmv?: string | null
+  clinicId?: string
   createdAt: string
   updatedAt: string
+}
+
+export interface Clinic {
+  id: string
+  name: string
+  cnpj?: string | null
+  address?: string | null
+  phone?: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface UpdateClinicRequest {
+  name?: string
+  cnpj?: string | null
+  address?: string | null
+  phone?: string | null
+}
+
+export interface UpdateUserProfileRequest {
+  name?: string
+  crmv?: string | null
 }
 
 export interface AuthResponse {
@@ -31,6 +55,10 @@ export interface RegisterRequest {
   email: string
   password: string
   clinicName: string
+  clinicCnpj?: string
+  clinicAddress?: string
+  clinicPhone?: string
+  crmv?: string
 }
 
 // ── Tutor ─────────────────────────────────────────

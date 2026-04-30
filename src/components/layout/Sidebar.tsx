@@ -42,6 +42,11 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
     }
   }
 
+  const handleOpenProfileSettings = () => {
+    onClose?.()
+    navigate('/configuracoes')
+  }
+
   const displayName = user?.name || 'Rafael Rocha'
   const displayAvatar =
     user?.avatarUrl ||
@@ -84,12 +89,17 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="sidebar-user">
+          <button
+            type="button"
+            className="sidebar-user"
+            onClick={handleOpenProfileSettings}
+            aria-label="Abrir informações do veterinário"
+          >
             <div className="sidebar-avatar">
               {displayAvatar ? <img src={displayAvatar} alt={displayName} /> : initials}
             </div>
             <span className="sidebar-username">{displayName}</span>
-          </div>
+          </button>
 
           <button className="sidebar-logout" onClick={handleLogout}>
             <LogOut />

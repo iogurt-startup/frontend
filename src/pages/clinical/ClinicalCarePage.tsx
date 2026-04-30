@@ -455,7 +455,7 @@ export function ClinicalCarePage() {
             disabled={!record.finalized || printing}
           >
             <Printer size={16} />
-            {printing ? 'Gerando PDF...' : 'Imprimir'}
+            {printing ? 'Gerando PDF...' : 'Gerar Receita'}
           </button>
           <button
             className="care-top-action care-top-action-primary"

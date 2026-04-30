@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, LoaderCircle, Printer, Share2 } from 'lucide-react'
+import { ArrowLeft, FileText, LoaderCircle, Share2 } from 'lucide-react'
 import { parseRoutineGuidance } from '../../lib/clinicalRecordContent'
 import { historyService } from '../../lib/historyService'
+import { clinicalService } from '../../lib/clinicalService'
 import type { ClinicalHistoryItem, Patient } from '../../types'
 import '../../styles/history.css'
 
@@ -74,6 +75,8 @@ export function HistoryDetailsPage() {
   const [error, setError] = useState('')
   const [patient, setPatient] = useState<Patient | null>(null)
   const [record, setRecord] = useState<ClinicalHistoryItem | null>(null)
+  const [prescriptionLoading, setPrescriptionLoading] = useState(false)
+  const [prescriptionError, setPrescriptionError] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -126,6 +129,29 @@ export function HistoryDetailsPage() {
     [record],
   )
 
+  const hasPrescriptionContent = Boolean(record?.prescriptions?.trim())
+
+  async function handleGeneratePrescription() {
+    if (!record) return
+    setPrescriptionLoading(true)
+    setPrescriptionError('')
+    try {
+      const blob = await clinicalService.getPrescriptionPdf(record.id)
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank', 'noopener,noreferrer')
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    } catch (err: any) {
+      setPrescriptionError(
+        err?.response?.data?.error ||
+          err?.response?.data?.message ||
+          err?.message ||
+          'Não foi possível gerar a receita.',
+      )
+    } finally {
+      setPrescriptionLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="history-detail-state">
@@ -147,9 +173,22 @@ export function HistoryDetailsPage() {
         </button>
 
         <div className="history-detail-actions">
-          <button type="button" onClick={() => window.print()}>
-            <Printer size={16} />
-            Imprimir
+          <button
+            type="button"
+            onClick={handleGeneratePrescription}
+            disabled={!hasPrescriptionContent || prescriptionLoading}
+            title={
+              hasPrescriptionContent
+                ? 'Gerar PDF da receita'
+                : 'Adicione uma prescrição para gerar a receita'
+            }
+          >
+            {prescriptionLoading ? (
+              <LoaderCircle size={16} className="care-spin" />
+            ) : (
+              <FileText size={16} />
+            )}
+            {prescriptionLoading ? 'Gerando…' : 'Gerar Receita'}
           </button>
           <button
             type="button"
@@ -165,6 +204,10 @@ export function HistoryDetailsPage() {
           </button>
         </div>
       </div>
+
+      {prescriptionError && (
+        <div className="history-detail-error">{prescriptionError}</div>
+      )}
 
       <div className="history-detail-content">
         <p className="history-detail-kicker">

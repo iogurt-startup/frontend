@@ -120,6 +120,23 @@
   color: var(--color-primary);
 }
 
+.history-detail-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: transparent;
+  color: var(--gray-600);
+}
+
+.history-detail-error {
+  margin-top: var(--space-md);
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  font-size: 0.9rem;
+}
+
 .history-filters-card {
   width: 320px;
   flex-shrink: 0;
