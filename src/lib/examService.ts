@@ -35,4 +35,17 @@ export const examService = {
     const normalizedPath = fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`
     return `${normalizedBase}${normalizedPath}`
   },
+
+  async downloadExamFile(fileUrl: string, fileName: string): Promise<void> {
+    const url = this.resolveExamFileUrl(fileUrl)
+    const response = await api.get(url, { responseType: 'blob' })
+    const blobUrl = URL.createObjectURL(response.data)
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
+  },
 }

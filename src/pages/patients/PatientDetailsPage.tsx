@@ -607,16 +607,13 @@ export function PatientDetailsPage() {
                       </td>
                       <td>{formatDate(item.uploadedAt)}</td>
                       <td>
-                        <a
-                          href={examService.resolveExamFileUrl(item.fileUrl)}
-                          download={item.fileName}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
+                          onClick={() => void examService.downloadExamFile(item.fileUrl, item.fileName)}
                           className="patient-records-action"
                           style={{ display: 'inline-flex', padding: '6px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
                         >
                           <Download size={16} />
-                        </a>
+                        </button>
                       </td>
                     </tr>
                   ))
