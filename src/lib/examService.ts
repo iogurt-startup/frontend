@@ -24,5 +24,15 @@ export const examService = {
     })
     
     return response.data
-  }
+  },
+
+  resolveExamFileUrl(fileUrl: string): string {
+    if (!fileUrl) return ''
+    if (/^https?:\/\//i.test(fileUrl)) return fileUrl
+
+    const baseUrl = api.defaults.baseURL || ''
+    const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
+    const normalizedPath = fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`
+    return `${normalizedBase}${normalizedPath}`
+  },
 }

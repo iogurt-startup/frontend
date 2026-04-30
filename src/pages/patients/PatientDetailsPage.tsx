@@ -608,7 +608,7 @@ export function PatientDetailsPage() {
                       <td>{formatDate(item.uploadedAt)}</td>
                       <td>
                         <a
-                          href={item.fileUrl}
+                          href={examService.resolveExamFileUrl(item.fileUrl)}
                           download={item.fileName}
                           target="_blank"
                           rel="noreferrer"
