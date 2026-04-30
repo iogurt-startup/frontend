@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Home, PawPrint, Calendar, Clock, LogOut, BarChart3, Settings } from 'lucide-react'
+import { Home, PawPrint, Calendar, Clock, LogOut, BarChart3 } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
 import { authService } from '../../lib/authService'
 import type { Role } from '../../types'
@@ -11,7 +11,6 @@ function getNavItems(role?: Role) {
     { to: '/pacientes', label: 'Pacientes', icon: PawPrint },
     { to: '/agenda', label: 'Agenda', icon: Calendar },
     { to: '/historico', label: 'Histórico', icon: Clock },
-    { to: '/configuracoes', label: 'Informações do Veterinário', icon: Settings },
   ]
 
   if (role === 'OWNER') {
@@ -41,6 +40,11 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
       onClose?.()
       navigate('/login')
     }
+  }
+
+  const handleOpenProfileSettings = () => {
+    onClose?.()
+    navigate('/configuracoes')
   }
 
   const displayName = user?.name || 'Rafael Rocha'
@@ -85,12 +89,17 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="sidebar-user">
+          <button
+            type="button"
+            className="sidebar-user"
+            onClick={handleOpenProfileSettings}
+            aria-label="Abrir informações do veterinário"
+          >
             <div className="sidebar-avatar">
               {displayAvatar ? <img src={displayAvatar} alt={displayName} /> : initials}
             </div>
             <span className="sidebar-username">{displayName}</span>
-          </div>
+          </button>
 
           <button className="sidebar-logout" onClick={handleLogout}>
             <LogOut />

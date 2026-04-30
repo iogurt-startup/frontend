@@ -91,6 +91,19 @@
   align-items: center;
   gap: var(--space-md);
   margin-bottom: var(--space-md);
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 6px 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+
+.sidebar-user:hover {
+  background: var(--pink-50);
 }
 
 .sidebar-avatar {
