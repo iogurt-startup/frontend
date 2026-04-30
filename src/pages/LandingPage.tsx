@@ -65,6 +65,11 @@ export function LandingPage() {
         </div>
       </section>
 
+      <div className="landing-slogan-section">
+        <h2>Simplifique seu dia a dia com IA e gestão completa!</h2>
+      </div>
+
+
       <section id="sobre" className="landing-section landing-about">
         <div className="landing-section-container">
           <h2>Sobre o iougurt</h2>

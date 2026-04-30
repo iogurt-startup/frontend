@@ -28,7 +28,7 @@ export function LoginPage() {
     try {
       const data = await authService.login({ email, password })
       setAuth(data.user, data.accessToken, data.refreshToken)
-      navigate(data.user.role === 'TUTOR' ? '/portal' : '/')
+      navigate(data.user.role === 'TUTOR' ? '/portal' : '/home')
     } catch (err: any) {
       setError(
         err.response?.data?.error ||
@@ -46,7 +46,7 @@ export function LoginPage() {
     try {
       const data = await authService.googleLogin(accessToken)
       setAuth(data.user, data.accessToken, data.refreshToken)
-      navigate(data.user.role === 'TUTOR' ? '/portal' : '/')
+      navigate(data.user.role === 'TUTOR' ? '/portal' : '/home')
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao autenticar com o Google.')
     } finally {

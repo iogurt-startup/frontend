@@ -15,6 +15,45 @@ function patchCurrentUser(partial: Partial<User>) {
 
 type FeedbackState = { kind: 'success' | 'error'; message: string } | null
 
+function formatCnpj(value: string) {
+  const digits = value.replace(/\D/g, '').slice(0, 14)
+
+  if (digits.length <= 2) return digits
+  if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`
+  if (digits.length <= 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`
+  if (digits.length <= 12) {
+    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`
+  }
+
+  return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`
+}
+
+function formatPhone(value: string) {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+
+  if (digits.length === 0) return ''
+  if (digits.length <= 2) return `(${digits}`
+
+  const ddd = digits.slice(0, 2)
+  const rest = digits.slice(2)
+
+  if (rest.length <= 4) return `(${ddd}) ${rest}`
+  if (rest.length <= 8) return `(${ddd}) ${rest.slice(0, 4)}-${rest.slice(4)}`
+
+  return `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5)}`
+}
+
+function normalizeCrmv(value: string) {
+  const trimmed = value.trim().toUpperCase()
+  if (!trimmed) return ''
+
+  const match = trimmed.match(/^(?:CRMV[-\s]?)?([A-Z]{2})[-\s]?(\d{4,6})$/)
+  if (!match) return null
+
+  const [, uf, number] = match
+  return `CRMV-${uf} ${number}`
+}
+
 export function SettingsPage() {
   const user = useAuthStore((s) => s.user)
 
@@ -46,14 +85,15 @@ export function SettingsPage() {
         if (cancelled) return
 
         setProfile(meRes)
-        setProfileForm({ name: meRes.name ?? '', crmv: meRes.crmv ?? '' })
+        const normalizedCrmv = normalizeCrmv(meRes.crmv ?? '')
+        setProfileForm({ name: meRes.name ?? '', crmv: normalizedCrmv ?? (meRes.crmv ?? '') })
 
         if (clinicRes) {
           setClinicForm({
             name: clinicRes.name ?? '',
-            cnpj: clinicRes.cnpj ?? '',
+            cnpj: formatCnpj(clinicRes.cnpj ?? ''),
             address: clinicRes.address ?? '',
-            phone: clinicRes.phone ?? '',
+            phone: formatPhone(clinicRes.phone ?? ''),
           })
         }
       } catch (err: any) {
@@ -87,9 +127,9 @@ export function SettingsPage() {
       })
       setClinicForm({
         name: updated.name ?? '',
-        cnpj: updated.cnpj ?? '',
+        cnpj: formatCnpj(updated.cnpj ?? ''),
         address: updated.address ?? '',
-        phone: updated.phone ?? '',
+        phone: formatPhone(updated.phone ?? ''),
       })
       setClinicFeedback({ kind: 'success', message: 'Dados da clínica atualizados.' })
     } catch (err: any) {
@@ -104,15 +144,27 @@ export function SettingsPage() {
 
   async function handleProfileSubmit(event: React.FormEvent) {
     event.preventDefault()
-    setSavingProfile(true)
     setProfileFeedback(null)
+    const normalizedCrmv = normalizeCrmv(profileForm.crmv)
+
+    if (profileForm.crmv.trim() && !normalizedCrmv) {
+      setProfileFeedback({
+        kind: 'error',
+        message: 'CRMV inválido. Use o formato CRMV-UF 12345.',
+      })
+      return
+    }
+
+    setSavingProfile(true)
     try {
       const updated = await authService.updateMe({
         name: profileForm.name.trim() || undefined,
-        crmv: profileForm.crmv.trim() || null,
+        crmv: normalizedCrmv || null,
       })
       setProfile(updated)
-      patchCurrentUser({ name: updated.name, crmv: updated.crmv ?? null })
+      const updatedCrmv = normalizeCrmv(updated.crmv ?? '') ?? updated.crmv ?? null
+      patchCurrentUser({ name: updated.name, crmv: updatedCrmv })
+      setProfileForm((prev) => ({ ...prev, crmv: normalizedCrmv ?? '' }))
       setProfileFeedback({ kind: 'success', message: 'Perfil atualizado.' })
     } catch (err: any) {
       setProfileFeedback({
@@ -137,7 +189,7 @@ export function SettingsPage() {
   return (
     <div className="settings-page">
       <header className="settings-header">
-        <h1>Configurações</h1>
+        <h1>Informações do Veterinário</h1>
         <p>Mantenha seus dados cadastrais atualizados — eles aparecem em receitas e documentos emitidos.</p>
       </header>
 
@@ -167,8 +219,10 @@ export function SettingsPage() {
               <input
                 type="text"
                 value={clinicForm.cnpj}
-                onChange={(e) => setClinicForm((p) => ({ ...p, cnpj: e.target.value }))}
+                onChange={(e) => setClinicForm((p) => ({ ...p, cnpj: formatCnpj(e.target.value) }))}
                 placeholder="00.000.000/0000-00"
+                inputMode="numeric"
+                maxLength={18}
               />
             </label>
 
@@ -187,8 +241,10 @@ export function SettingsPage() {
               <input
                 type="text"
                 value={clinicForm.phone}
-                onChange={(e) => setClinicForm((p) => ({ ...p, phone: e.target.value }))}
+                onChange={(e) => setClinicForm((p) => ({ ...p, phone: formatPhone(e.target.value) }))}
                 placeholder="(00) 00000-0000"
+                inputMode="numeric"
+                maxLength={15}
               />
             </label>
 
@@ -233,8 +289,15 @@ export function SettingsPage() {
             <input
               type="text"
               value={profileForm.crmv}
-              onChange={(e) => setProfileForm((p) => ({ ...p, crmv: e.target.value }))}
+              onChange={(e) => setProfileForm((p) => ({ ...p, crmv: e.target.value.toUpperCase() }))}
+              onBlur={() => {
+                const normalizedCrmv = normalizeCrmv(profileForm.crmv)
+                if (normalizedCrmv) {
+                  setProfileForm((p) => ({ ...p, crmv: normalizedCrmv }))
+                }
+              }}
               placeholder="CRMV-XX 00000"
+              maxLength={14}
             />
           </label>
 

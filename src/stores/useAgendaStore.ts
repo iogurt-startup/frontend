@@ -20,7 +20,7 @@ interface AgendaState {
   fetchAppointments: (date?: string) => Promise<void>
   createAppointment: (data: CreateAppointmentRequest) => Promise<void>
   cancelAppointment: (id: string, reason: string) => Promise<void>
-  rescheduleAppointment: (id: string, dateTime: string) => Promise<void>
+  rescheduleAppointment: (id: string, dateTime: string, endDateTime: string) => Promise<void>
 }
 
 export const useAgendaStore = create<AgendaState>()((set, get) => ({
@@ -72,19 +72,21 @@ export const useAgendaStore = create<AgendaState>()((set, get) => ({
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
         'Erro ao cancelar agendamento.'
       set({ error: message, isLoading: false })
+      throw new Error(message)
     }
   },
 
-  rescheduleAppointment: async (id, dateTime) => {
+  rescheduleAppointment: async (id, dateTime, endDateTime) => {
     set({ isLoading: true, error: null })
     try {
-      await AppointmentsService.reschedule(id, dateTime)
+      await AppointmentsService.reschedule(id, { dateTime, endDateTime })
       await get().fetchAppointments()
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
         'Erro ao reagendar.'
       set({ error: message, isLoading: false })
+      throw new Error(message)
     }
   },
 }))

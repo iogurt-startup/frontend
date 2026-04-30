@@ -160,10 +160,14 @@ function buildHistorySummary(patient: Patient, history: ClinicalHistoryItem[], v
           : 'Sem dados vacinais',
     previousVisits: history
       .filter((item) => item.finalized)
-      .slice(0, 3)
       .map((item) => ({
         id: item.id,
-        label: `${formatDate(item.appointment?.dateTime ?? item.createdAt)} — ${item.diagnosis || item.clinicalNotes || 'Atendimento registrado'}`,
+        date: formatDate(item.appointment?.dateTime ?? item.createdAt),
+        summary:
+          item.aiSummary?.trim() ||
+          item.diagnosis?.trim() ||
+          item.clinicalNotes?.trim() ||
+          'Atendimento registrado sem resumo disponível.',
       })),
     lastDiagnosis: lastFinished?.diagnosis || null,
   }
@@ -395,7 +399,10 @@ export function ClinicalCarePage() {
               {summary.previousVisits.length > 0 ? (
                 <ul className="care-previous-list">
                   {summary.previousVisits.map((item) => (
-                    <li key={item.id}>{item.label}</li>
+                    <li key={item.id}>
+                      <span>{item.date}</span>
+                      <p>{item.summary}</p>
+                    </li>
                   ))}
                 </ul>
               ) : (

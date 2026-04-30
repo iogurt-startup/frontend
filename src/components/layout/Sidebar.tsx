@@ -1,16 +1,25 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Home, PawPrint, Calendar, Clock, LogOut, Settings } from 'lucide-react'
+import { Home, PawPrint, Calendar, Clock, LogOut, BarChart3, Settings } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
 import { authService } from '../../lib/authService'
+import type { Role } from '../../types'
 import '../../styles/layout.css'
 
-const navItems = [
-  { to: '/', label: 'Home', icon: Home },
-  { to: '/pacientes', label: 'Pacientes', icon: PawPrint },
-  { to: '/agenda', label: 'Agenda', icon: Calendar },
-  { to: '/historico', label: 'Histórico', icon: Clock },
-  { to: '/configuracoes', label: 'Configurações', icon: Settings },
-]
+function getNavItems(role?: Role) {
+  const items = [
+    { to: '/home', label: 'Home', icon: Home },
+    { to: '/pacientes', label: 'Pacientes', icon: PawPrint },
+    { to: '/agenda', label: 'Agenda', icon: Calendar },
+    { to: '/historico', label: 'Histórico', icon: Clock },
+    { to: '/configuracoes', label: 'Informações do Veterinário', icon: Settings },
+  ]
+
+  if (role === 'OWNER') {
+    items.push({ to: '/dashboard', label: 'Dashboard', icon: BarChart3 })
+  }
+
+  return items
+}
 
 interface SidebarProps {
   mobileOpen?: boolean
@@ -20,6 +29,7 @@ interface SidebarProps {
 export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
+  const navItems = getNavItems(user?.role)
 
   const handleLogout = async () => {
     try {
@@ -65,7 +75,7 @@ export function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
               key={item.to}
               to={item.to}
               className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
-              end={item.to === '/'}
+              end={item.to === '/home' || item.to === '/dashboard'}
               onClick={onClose}
             >
               <item.icon />

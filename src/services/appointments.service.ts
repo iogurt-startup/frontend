@@ -1,6 +1,11 @@
 import { api } from './api'
 import type { Appointment, CreateAppointmentRequest } from '../types'
 
+interface RescheduleAppointmentRequest {
+  dateTime: string
+  endDateTime: string
+}
+
 export const AppointmentsService = {
   async listByDay(date: string, vetId?: string): Promise<Appointment[]> {
     const response = await api.get<{ appointments: Appointment[] }>('/appointments', {
@@ -21,10 +26,8 @@ export const AppointmentsService = {
     return response.data
   },
 
-  async reschedule(id: string, dateTime: string): Promise<Appointment> {
-    const response = await api.patch<Appointment>(`/appointments/${id}/reschedule`, {
-      dateTime,
-    })
+  async reschedule(id: string, data: RescheduleAppointmentRequest): Promise<Appointment> {
+    const response = await api.patch<Appointment>(`/appointments/${id}/reschedule`, data)
     return response.data
   },
 }

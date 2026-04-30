@@ -6,6 +6,7 @@
   max-width: 960px;
   margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .settings-state {
@@ -44,6 +45,8 @@
   border-radius: 16px;
   padding: 24px 28px;
   box-shadow: 0 4px 18px rgba(236, 72, 153, 0.06);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .settings-card-title {
@@ -90,6 +93,9 @@
   font-size: 0.95rem;
   background: #fff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .settings-field input:focus {
@@ -141,6 +147,8 @@
   font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.08s ease;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .settings-button:hover:not(:disabled) {
@@ -156,6 +164,9 @@
   .settings-page {
     padding: 20px 16px;
   }
+  .settings-card {
+    padding: 18px 14px;
+  }
   .settings-form {
     grid-template-columns: 1fr;
   }
@@ -163,5 +174,11 @@
   .settings-feedback,
   .settings-actions {
     grid-column: span 1;
+  }
+  .settings-actions {
+    justify-content: stretch;
+  }
+  .settings-button {
+    width: 100%;
   }
 }
