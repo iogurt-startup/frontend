@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import { useState, type FormEvent, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react'
 
 import { authService } from '../../lib/authService'
 import { useAuthStore } from '../../stores/authStore'
@@ -17,13 +17,31 @@ export function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  
+  const [successMessage, setSuccessMessage] = useState('')
 
   const setAuth = useAuthStore((s) => s.setAuth)
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message)
+      // Clear state so it doesn't persist on refresh
+      window.history.replaceState({}, document.title)
+      
+      // Auto-hide after 5 seconds
+      const timer = setTimeout(() => {
+        setSuccessMessage('')
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [location])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
+    setSuccessMessage('')
     setLoading(true)
     try {
       const data = await authService.login({ email, password })
@@ -42,6 +60,7 @@ export function LoginPage() {
 
   const handleGoogleSuccess = async (accessToken: string) => {
     setError('')
+    setSuccessMessage('')
     setGoogleLoading(true)
     try {
       const data = await authService.googleLogin(accessToken)
@@ -55,7 +74,13 @@ export function LoginPage() {
   }
 
   return (
-    <div className="auth-page">
+    <div className="auth-page relative">
+      {successMessage && (
+        <div className="auth-success-toast">
+          <CheckCircle size={18} />
+          {successMessage}
+        </div>
+      )}
       <PawSvg className="auth-deco auth-deco-paw" />
       <FishSvg className="auth-deco auth-deco-fish" />
       <BoneSvg className="auth-deco auth-deco-bone" />

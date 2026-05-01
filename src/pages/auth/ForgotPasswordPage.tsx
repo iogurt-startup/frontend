@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
 import { PawSvg, FishSvg, BoneSvg } from '../../components/auth/PetDecorations'
+import { api } from '../../lib/api'
 import '../../styles/auth.css'
 
 export function ForgotPasswordPage() {
@@ -15,12 +16,15 @@ export function ForgotPasswordPage() {
     setError('')
     setLoading(true)
 
-    // Simulated — backend doesn't have this endpoint yet
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await api.post('/auth/password/forgot', { email })
       setSent(true)
-    } catch {
-      setError('Erro ao enviar email. Tente novamente.')
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message || 
+        err.response?.data?.error || 
+        'Erro ao enviar email. Tente novamente.'
+      )
     } finally {
       setLoading(false)
     }

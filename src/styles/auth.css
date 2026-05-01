@@ -75,48 +75,134 @@
 
 /* Paw drifts from top-left → across center → bottom-right → back */
 @keyframes decoWander1 {
-  0%   { transform: translate(0, 0) rotate(0deg); }
-  10%  { transform: translate(20vw, 10vh) rotate(15deg); }
-  25%  { transform: translate(45vw, 25vh) rotate(-10deg); }
-  40%  { transform: translate(30vw, 50vh) rotate(20deg); }
-  55%  { transform: translate(55vw, 35vh) rotate(-5deg); }
-  70%  { transform: translate(25vw, 60vh) rotate(12deg); }
-  85%  { transform: translate(10vw, 30vh) rotate(-8deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  10% {
+    transform: translate(20vw, 10vh) rotate(15deg);
+  }
+
+  25% {
+    transform: translate(45vw, 25vh) rotate(-10deg);
+  }
+
+  40% {
+    transform: translate(30vw, 50vh) rotate(20deg);
+  }
+
+  55% {
+    transform: translate(55vw, 35vh) rotate(-5deg);
+  }
+
+  70% {
+    transform: translate(25vw, 60vh) rotate(12deg);
+  }
+
+  85% {
+    transform: translate(10vw, 30vh) rotate(-8deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
 }
 
 /* Fish drifts from bottom-right → across center-left → back */
 @keyframes decoWander2 {
-  0%   { transform: translate(0, 0) rotate(0deg); }
-  12%  { transform: translate(-25vw, -15vh) rotate(-12deg); }
-  28%  { transform: translate(-50vw, -30vh) rotate(8deg); }
-  42%  { transform: translate(-35vw, -55vh) rotate(-15deg); }
-  58%  { transform: translate(-60vw, -25vh) rotate(10deg); }
-  72%  { transform: translate(-40vw, -45vh) rotate(-6deg); }
-  88%  { transform: translate(-15vw, -20vh) rotate(5deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  12% {
+    transform: translate(-25vw, -15vh) rotate(-12deg);
+  }
+
+  28% {
+    transform: translate(-50vw, -30vh) rotate(8deg);
+  }
+
+  42% {
+    transform: translate(-35vw, -55vh) rotate(-15deg);
+  }
+
+  58% {
+    transform: translate(-60vw, -25vh) rotate(10deg);
+  }
+
+  72% {
+    transform: translate(-40vw, -45vh) rotate(-6deg);
+  }
+
+  88% {
+    transform: translate(-15vw, -20vh) rotate(5deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
 }
 
 /* Bone drifts from top-right → down-left → across → back */
 @keyframes decoWander3 {
-  0%   { transform: translate(0, 0) rotate(0deg); }
-  14%  { transform: translate(-30vw, 20vh) rotate(-20deg); }
-  30%  { transform: translate(-55vw, 40vh) rotate(10deg); }
-  46%  { transform: translate(-40vw, 60vh) rotate(-12deg); }
-  62%  { transform: translate(-20vw, 45vh) rotate(15deg); }
-  78%  { transform: translate(-45vw, 15vh) rotate(-8deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  14% {
+    transform: translate(-30vw, 20vh) rotate(-20deg);
+  }
+
+  30% {
+    transform: translate(-55vw, 40vh) rotate(10deg);
+  }
+
+  46% {
+    transform: translate(-40vw, 60vh) rotate(-12deg);
+  }
+
+  62% {
+    transform: translate(-20vw, 45vh) rotate(15deg);
+  }
+
+  78% {
+    transform: translate(-45vw, 15vh) rotate(-8deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
 }
 
 /* Extra paw drifts from bottom-center → up-left → across → back */
 @keyframes decoWander4 {
-  0%   { transform: translate(0, 0) rotate(0deg); }
-  16%  { transform: translate(15vw, -30vh) rotate(10deg); }
-  33%  { transform: translate(-20vw, -55vh) rotate(-15deg); }
-  50%  { transform: translate(10vw, -40vh) rotate(8deg); }
-  66%  { transform: translate(-25vw, -20vh) rotate(-10deg); }
-  83%  { transform: translate(5vw, -50vh) rotate(12deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  16% {
+    transform: translate(15vw, -30vh) rotate(10deg);
+  }
+
+  33% {
+    transform: translate(-20vw, -55vh) rotate(-15deg);
+  }
+
+  50% {
+    transform: translate(10vw, -40vh) rotate(8deg);
+  }
+
+  66% {
+    transform: translate(-25vw, -20vh) rotate(-10deg);
+  }
+
+  83% {
+    transform: translate(5vw, -50vh) rotate(12deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -355,10 +441,91 @@
 .auth-google-btn:hover:not(:disabled) {
   background: var(--gray-50);
   border-color: var(--gray-400);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .auth-google-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════
+   Reset Password Page & Success Toast
+   ═══════════════════════════════════════════════════ */
+
+.reset-card {
+  max-width: 480px;
+  align-items: flex-start;
+}
+
+.password-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+  margin-bottom: var(--space-md);
+  width: 100%;
+}
+
+.password-check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.password-check-item .check-icon {
+  color: var(--gray-400);
+  transition: color var(--transition-fast), fill var(--transition-fast);
+}
+
+.password-check-item.valid {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.password-check-item.valid .check-icon {
+  color: #fff;
+  fill: #10b981; /* Tailwind emerald-500 */
+}
+
+.input-error {
+  border-color: #ef4444 !important; /* Tailwind red-500 */
+}
+
+/* Toast displayed on the top right in auth pages */
+.auth-success-toast {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #86efac; /* Tailwind green-300 / pastel green */
+  color: #14532d; /* dark green text */
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  animation: slideInRight 0.3s ease-out forwards;
+}
+
+.auth-success-toast svg {
+  color: #15803d; /* darker green icon */
+  fill: #fff;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
