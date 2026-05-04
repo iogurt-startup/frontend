@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { portalService } from '../../lib/portalService'
-import { useAuthStore } from '../../stores/authStore'
+
 import type {
   TutorAlert,
   TutorDashboard,
@@ -118,7 +118,7 @@ function buildCareCards(
       new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime()
     )
 
-  petAppointments.forEach((appt: Appointment, idx: number) => {
+  petAppointments.forEach((appt: Appointment) => {
     const days = daysUntil(appt.dateTime)
     cards.push({
       id: `appt-${appt.id}`,
@@ -214,7 +214,7 @@ function buildCareCards(
 
 export function IougurtCarePage() {
   const navigate = useNavigate()
-  const user = useAuthStore((state) => state.user)
+
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
