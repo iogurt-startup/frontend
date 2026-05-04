@@ -24,13 +24,13 @@ jobs:
         run: npm ci
 
       - name: Rodar Linter (ESLint)
-        run: npm run lint[cite: 4, 8]
+        run: npm run lint[4, 8]
 
       - name: Verificar Tipagem (Typecheck)
-        run: npx tsc -b[cite: 4, 9]
+        run: npx tsc -b[4, 9]
 
       - name: Testar Build
-        run: npm run build[cite: 4, 6]
+        run: npm run build[4, 6]
 
   build-docker:
     name: Build e Push da Imagem Docker
