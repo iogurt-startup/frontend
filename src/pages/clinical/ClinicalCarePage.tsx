@@ -13,6 +13,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import { clinicalService } from '../../lib/clinicalService'
+import { getErrorMessage } from '../../lib/errorMessage'
 import {
   getCareFormValues,
   getClinicalRecordPayload,
@@ -230,13 +231,9 @@ export function ClinicalCarePage() {
         setVaccinations(vaccinationsData)
         setForm(nextForm)
         setSavedForm(nextForm)
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (cancelled) return
-        setError(
-          err.response?.data?.error ||
-            err.response?.data?.message ||
-            'Não foi possível carregar o atendimento.',
-        )
+        setError(getErrorMessage(err, 'Não foi possível carregar o atendimento.'))
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -297,14 +294,8 @@ export function ClinicalCarePage() {
       setForm(nextForm)
       setSavedForm(nextForm)
       setToast({ type: 'success', message: 'Atendimento salvo com sucesso.' })
-    } catch (err: any) {
-      setToast({
-        type: 'error',
-        message:
-          err.response?.data?.error ||
-          err.response?.data?.message ||
-          'Não foi possível salvar o atendimento.',
-      })
+    } catch (err: unknown) {
+      setToast({ type: 'error', message: getErrorMessage(err, 'Não foi possível salvar o atendimento.') })
     } finally {
       setSaving(false)
     }
@@ -330,14 +321,8 @@ export function ClinicalCarePage() {
       await refreshHistoryData()
       setToast({ type: 'success', message: 'Atendimento finalizado com sucesso.' })
       setActiveTab('prontuario')
-    } catch (err: any) {
-      setToast({
-        type: 'error',
-        message:
-          err.response?.data?.error ||
-          err.response?.data?.message ||
-          'Não foi possível finalizar o atendimento.',
-      })
+    } catch (err: unknown) {
+      setToast({ type: 'error', message: getErrorMessage(err, 'Não foi possível finalizar o atendimento.') })
     } finally {
       setFinalizing(false)
     }
@@ -352,14 +337,8 @@ export function ClinicalCarePage() {
       const url = URL.createObjectURL(blob)
       window.open(url, '_blank', 'noopener,noreferrer')
       window.setTimeout(() => URL.revokeObjectURL(url), 10_000)
-    } catch (err: any) {
-      setToast({
-        type: 'error',
-        message:
-          err.response?.data?.error ||
-          err.response?.data?.message ||
-          'Não foi possível gerar o PDF do receituário.',
-      })
+    } catch (err: unknown) {
+      setToast({ type: 'error', message: getErrorMessage(err, 'Não foi possível gerar o PDF do receituário.') })
     } finally {
       setPrinting(false)
     }

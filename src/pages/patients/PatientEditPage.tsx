@@ -2,6 +2,7 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, Save, PawPrint, User, ImagePlus, CircleHelp } from 'lucide-react'
 import { api } from '../../lib/api'
+import { getErrorMessage } from '../../lib/errorMessage'
 import type { Patient } from '../../types'
 import '../../styles/patients.css'
 
@@ -399,8 +400,8 @@ export function PatientEditPage() {
 
       showToast('Dados atualizados com sucesso!', 'success')
       setTimeout(() => navigate(`/pacientes/${id}`), 900)
-    } catch (err: any) {
-      const message = err.response?.data?.message || err.response?.data?.error || 'Erro ao salvar alteracoes.'
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Erro ao salvar alteracoes.')
       showToast(message, 'error')
     } finally {
       setSaving(false)

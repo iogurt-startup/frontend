@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
 import { PawSvg, FishSvg, BoneSvg } from '../../components/auth/PetDecorations'
 import { api } from '../../lib/api'
+import { getErrorMessage } from '../../lib/errorMessage'
 import '../../styles/auth.css'
 
 export function ForgotPasswordPage() {
@@ -19,12 +20,8 @@ export function ForgotPasswordPage() {
     try {
       await api.post('/auth/password/forgot', { email })
       setSent(true)
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || 
-        err.response?.data?.error || 
-        'Erro ao enviar email. Tente novamente.'
-      )
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Erro ao enviar email. Tente novamente.'))
     } finally {
       setLoading(false)
     }

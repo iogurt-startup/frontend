@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { api } from '../../lib/api'
 import { clinicalService } from '../../lib/clinicalService'
+import { getErrorMessage } from '../../lib/errorMessage'
 import { examService } from '../../lib/examService'
 import { AppointmentsService } from '../../services/appointments.service'
 import { TutorsService } from '../../services/tutors.service'
@@ -214,7 +215,7 @@ export function PatientDetailsPage() {
 
   useEffect(() => {
     setTutorAccessEmail(patient?.tutor?.email ?? '')
-  }, [patient?.tutor?.id])
+  }, [patient?.tutor?.email, patient?.tutor?.id])
 
   if (loading) {
     return (
@@ -261,11 +262,8 @@ export function PatientDetailsPage() {
           },
         }
       })
-    } catch (err: any) {
-      setTutorAccessError(
-        err.response?.data?.message ||
-          'Nao foi possivel criar o acesso do tutor.',
-      )
+    } catch (err: unknown) {
+      setTutorAccessError(getErrorMessage(err, 'Nao foi possivel criar o acesso do tutor.'))
     } finally {
       setCreatingTutorAccess(false)
     }

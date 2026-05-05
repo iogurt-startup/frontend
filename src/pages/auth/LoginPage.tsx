@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react'
 
 import { authService } from '../../lib/authService'
+import { getErrorMessage } from '../../lib/errorMessage'
 import { useAuthStore } from '../../stores/authStore'
 import { PawSvg, FishSvg, BoneSvg, CatFaceSvg } from '../../components/auth/PetDecorations'
 import { isGoogleOAuthConfigured } from '../../lib/googleOAuth'
@@ -47,12 +48,8 @@ export function LoginPage() {
       const data = await authService.login({ email, password })
       setAuth(data.user, data.accessToken, data.refreshToken)
       navigate(data.user.role === 'TUTOR' ? '/portal' : '/home')
-    } catch (err: any) {
-      setError(
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        'Erro ao fazer login. Verifique suas credenciais.'
-      )
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Erro ao fazer login. Verifique suas credenciais.'))
     } finally {
       setLoading(false)
     }
@@ -66,8 +63,8 @@ export function LoginPage() {
       const data = await authService.googleLogin(accessToken)
       setAuth(data.user, data.accessToken, data.refreshToken)
       navigate(data.user.role === 'TUTOR' ? '/portal' : '/home')
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao autenticar com o Google.')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Erro ao autenticar com o Google.'))
     } finally {
       setGoogleLoading(false)
     }

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { authService } from '../../lib/authService'
+import { getErrorMessage, getValidationIssueMessage } from '../../lib/errorMessage'
 import { useAuthStore } from '../../stores/authStore'
 import { PawSvg, FishSvg, BoneSvg, CatFaceSvg } from '../../components/auth/PetDecorations'
 import { GoogleLoginButton, GoogleIcon } from '../../components/auth/GoogleLoginButton'
@@ -30,18 +31,9 @@ export function RegisterPage() {
     try {
       await authService.register({ name, email, password, clinicName })
       navigate('/login')
-    } catch (err: any) {
-      if (err.response?.data?.issues) {
-        const issues = err.response.data.issues
-        const firstField = Object.keys(issues)[0]
-        setError(issues[firstField]?.[0] || 'Erro de validação.')
-      } else {
-        setError(
-          err.response?.data?.error ||
-            err.response?.data?.message ||
-            'Erro ao criar conta.'
-        )
-      }
+    } catch (err: unknown) {
+      const validationIssue = getValidationIssueMessage(err)
+      setError(validationIssue || getErrorMessage(err, 'Erro ao criar conta.'))
     } finally {
       setLoading(false)
     }
@@ -56,8 +48,8 @@ export function RegisterPage() {
       navigate('/login') // Força o VET a logar se precisar, ou vai direto. No Google é OWNER por padrão se novo.
       // Wait, let's navigate to home since setAuth is called.
       navigate(data.user.role === 'TUTOR' ? '/portal' : '/home')
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao autenticar com o Google.')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Erro ao autenticar com o Google.'))
     } finally {
       setGoogleLoading(false)
     }

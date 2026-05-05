@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRightToLine, Calendar, Filter, Search } from 'lucide-react'
+import { getErrorMessage } from '../../lib/errorMessage'
 import { portalService } from '../../lib/portalService'
 import type { Patient, TutorPortalClinicalRecord } from '../../types'
 import '../../styles/history.css'
@@ -112,12 +113,9 @@ export function TutorPortalHistoryPage() {
           .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
         if (!cancelled) setItems(flattened)
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!cancelled) {
-          setError(
-            err.response?.data?.message ||
-              'Nao foi possivel carregar o historico do tutor.',
-          )
+          setError(getErrorMessage(err, 'Nao foi possivel carregar o historico do tutor.'))
         }
       } finally {
         if (!cancelled) setLoading(false)

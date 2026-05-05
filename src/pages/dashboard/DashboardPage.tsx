@@ -43,7 +43,7 @@ export function DashboardPage() {
 
         setMetrics(metricsResponse)
         setTrend(trendResponse.trend)
-      } catch (err) {
+      } catch {
         if (!cancelled) {
           setError('Nao foi possivel carregar os indicadores gerenciais.')
         }

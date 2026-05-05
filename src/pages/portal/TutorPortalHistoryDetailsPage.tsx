@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Printer, Share2 } from 'lucide-react'
 import { parseRoutineGuidance } from '../../lib/clinicalRecordContent'
+import { getErrorMessage } from '../../lib/errorMessage'
 import { portalService } from '../../lib/portalService'
 import type { Patient, TutorPortalClinicalRecord } from '../../types'
 import '../../styles/history.css'
@@ -94,13 +95,9 @@ export function TutorPortalHistoryDetailsPage() {
           setPatient(response.patient)
           setRecord(matchedRecord)
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!cancelled) {
-          setError(
-            err.response?.data?.message ||
-              err.message ||
-              'Nao foi possivel carregar os detalhes da consulta.',
-          )
+          setError(getErrorMessage(err, 'Nao foi possivel carregar os detalhes da consulta.'))
         }
       } finally {
         if (!cancelled) setLoading(false)

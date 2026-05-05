@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronLeft, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 import { PawSvg, FishSvg, BoneSvg } from '../../components/auth/PetDecorations'
 import { api } from '../../lib/api'
+import { getErrorMessage } from '../../lib/errorMessage'
 import '../../styles/auth.css'
 
 export function ResetPasswordPage() {
@@ -51,12 +52,8 @@ export function ResetPasswordPage() {
       await api.post('/auth/password/reset', { token, newPassword })
       // Redirect to login with success state
       navigate('/login', { state: { message: 'Senha alterada com sucesso' } })
-    } catch (err: any) {
-      setApiError(
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        'Erro ao redefinir senha. Tente novamente.'
-      )
+    } catch (err: unknown) {
+      setApiError(getErrorMessage(err, 'Erro ao redefinir senha. Tente novamente.'))
     } finally {
       setLoading(false)
     }
