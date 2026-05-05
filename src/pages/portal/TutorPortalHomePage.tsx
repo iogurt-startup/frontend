@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, PawPrint, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { getErrorMessage } from '../../lib/errorMessage'
 import { portalService } from '../../lib/portalService'
 import { useAuthStore } from '../../stores/authStore'
 import type {
@@ -147,12 +148,9 @@ export function TutorPortalHomePage() {
         if (dashboardResponse.pets.length > 0) {
           setSelectedPetId((current) => current || dashboardResponse.pets[0].id)
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!cancelled) {
-          setError(
-            err.response?.data?.message ||
-              'Nao foi possivel carregar os dados do portal. Tente novamente.',
-          )
+          setError(getErrorMessage(err, 'Nao foi possivel carregar os dados do portal. Tente novamente.'))
         }
       } finally {
         if (!cancelled) setLoading(false)

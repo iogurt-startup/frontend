@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { FileUp, X, FileText, Image as ImageIcon } from 'lucide-react'
 import { examService } from '../lib/examService'
+import { getErrorMessage } from '../lib/errorMessage'
 import type { ExamFile } from '../types'
 
 interface UploadExamModalProps {
@@ -49,12 +50,8 @@ export function UploadExamModal({ patientId, onClose, onSuccess }: UploadExamMod
     try {
       const result = await examService.uploadExamFile(patientId, file)
       onSuccess(result)
-    } catch (err: any) {
-      setError(
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        'Não foi possível fazer o upload do exame.'
-      )
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Não foi possível fazer o upload do exame.'))
     } finally {
       setIsUploading(false)
     }

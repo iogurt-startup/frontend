@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { authService } from '../../lib/authService'
+import { getErrorMessage } from '../../lib/errorMessage'
 import { useAuthStore } from '../../stores/authStore'
 import { BoneSvg, FishSvg, PawSvg } from '../../components/auth/PetDecorations'
 import '../../styles/auth.css'
@@ -31,11 +32,8 @@ export function TutorLoginPage() {
 
       setAuth(data.user, data.accessToken, data.refreshToken)
       navigate('/portal')
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-          'Erro ao fazer login. Verifique suas credenciais.',
-      )
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Erro ao fazer login. Verifique suas credenciais.'))
     } finally {
       setLoading(false)
     }

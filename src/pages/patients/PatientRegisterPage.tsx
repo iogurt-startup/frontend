@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Save, PawPrint, User, Plus } from 'lucide-react'
 import { api } from '../../lib/api'
+import { getErrorMessage } from '../../lib/errorMessage'
 import { TutorsService } from '../../services/tutors.service'
 import type { Tutor } from '../../types'
 import '../../styles/patients.css'
@@ -378,7 +379,7 @@ export function PatientRegisterPage() {
       if (uniqueResults.length === 0) {
         setTutorSelectionError('Nenhum tutor encontrado para o termo informado')
       }
-    } catch (err) {
+    } catch {
       showToast('Não foi possível buscar tutores agora.', 'error')
     } finally {
       setSearchingTutor(false)
@@ -512,8 +513,13 @@ export function PatientRegisterPage() {
         try {
           const tutorRes = await api.post('/tutors', tutorPayload)
           tutorId = tutorRes.data.tutor.id
-        } catch (err: any) {
-          if (err.response?.status === 409) {
+        } catch (err: unknown) {
+          if (
+            typeof err === 'object' &&
+            err &&
+            'response' in err &&
+            (err as { response?: { status?: number } }).response?.status === 409
+          ) {
             showToast('Tutor já cadastrado. Use a opção "Selecionar tutor existente".', 'error')
             setLoading(false)
             return
@@ -543,8 +549,8 @@ export function PatientRegisterPage() {
 
       showToast('Paciente cadastrado com sucesso!', 'success')
       setTimeout(() => navigate('/pacientes'), 1500)
-    } catch (err: any) {
-      const message = err.response?.data?.message || err.response?.data?.error || 'Ocorreu um erro inesperado. Tente novamente.'
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, 'Ocorreu um erro inesperado. Tente novamente.')
       showToast(message, 'error')
     } finally {
       setLoading(false)

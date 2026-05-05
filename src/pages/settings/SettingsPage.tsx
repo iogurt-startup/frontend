@@ -3,6 +3,7 @@ import { Building2, Check, LoaderCircle, UserRound } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
 import { authService } from '../../lib/authService'
 import { clinicService } from '../../lib/clinicService'
+import { getErrorMessage } from '../../lib/errorMessage'
 import type { User } from '../../types'
 import '../../styles/settings.css'
 
@@ -96,11 +97,11 @@ export function SettingsPage() {
             phone: formatPhone(clinicRes.phone ?? ''),
           })
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!cancelled) {
           setProfileFeedback({
             kind: 'error',
-            message: err?.response?.data?.error || err?.message || 'Não foi possível carregar seus dados.',
+            message: getErrorMessage(err, 'Não foi possível carregar seus dados.'),
           })
         }
       } finally {
@@ -132,10 +133,10 @@ export function SettingsPage() {
         phone: formatPhone(updated.phone ?? ''),
       })
       setClinicFeedback({ kind: 'success', message: 'Dados da clínica atualizados.' })
-    } catch (err: any) {
+    } catch (err: unknown) {
       setClinicFeedback({
         kind: 'error',
-        message: err?.response?.data?.error || err?.message || 'Não foi possível salvar.',
+        message: getErrorMessage(err, 'Não foi possível salvar.'),
       })
     } finally {
       setSavingClinic(false)
@@ -166,10 +167,10 @@ export function SettingsPage() {
       patchCurrentUser({ name: updated.name, crmv: updatedCrmv })
       setProfileForm((prev) => ({ ...prev, crmv: normalizedCrmv ?? '' }))
       setProfileFeedback({ kind: 'success', message: 'Perfil atualizado.' })
-    } catch (err: any) {
+    } catch (err: unknown) {
       setProfileFeedback({
         kind: 'error',
-        message: err?.response?.data?.error || err?.message || 'Não foi possível salvar.',
+        message: getErrorMessage(err, 'Não foi possível salvar.'),
       })
     } finally {
       setSavingProfile(false)
