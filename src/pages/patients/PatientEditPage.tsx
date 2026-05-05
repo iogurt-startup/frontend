@@ -1,8 +1,10 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, Save, PawPrint, User, ImagePlus, CircleHelp } from 'lucide-react'
 import { api } from '../../lib/api'
 import { getErrorMessage } from '../../lib/errorMessage'
+import { isValidCpf, maskCpf, onlyDigits } from '../../lib/documents'
+import { CepNotFoundError, CepRequestError, fetchAddressByCep } from '../../lib/cep'
 import type { Patient } from '../../types'
 import '../../styles/patients.css'
 
@@ -79,14 +81,6 @@ const initialForm: EditFormData = {
   street: '',
   addressNumber: '',
   complement: '',
-}
-
-function maskCpf(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 11)
-  return digits
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
 }
 
 function maskPhone(value: string): string {
@@ -235,6 +229,9 @@ export function PatientEditPage() {
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [showExitModal, setShowExitModal] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [isFetchingCep, setIsFetchingCep] = useState(false)
+  const cepAbortRef = useRef<AbortController | null>(null)
+  const addressNumberRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -302,6 +299,54 @@ export function PatientEditPage() {
     }
   }
 
+  async function handleCepChange(rawValue: string) {
+    const masked = maskCep(rawValue)
+    updateField('cep', masked)
+
+    const digits = masked.replace(/\D/g, '')
+    if (digits.length !== 8) return
+
+    cepAbortRef.current?.abort()
+    const controller = new AbortController()
+    cepAbortRef.current = controller
+
+    setIsFetchingCep(true)
+    try {
+      const addr = await fetchAddressByCep(digits, controller.signal)
+      setForm((prev) => ({
+        ...prev,
+        state: addr.state || prev.state,
+        city: addr.city || prev.city,
+        neighborhood: addr.neighborhood || prev.neighborhood,
+        street: addr.street || prev.street,
+      }))
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next.cep
+        if (addr.state) delete next.state
+        if (addr.city) delete next.city
+        if (addr.neighborhood) delete next.neighborhood
+        if (addr.street) delete next.street
+        return next
+      })
+      addressNumberRef.current?.focus()
+    } catch (err) {
+      if ((err as DOMException)?.name === 'AbortError') return
+      const message =
+        err instanceof CepNotFoundError
+          ? 'CEP não encontrado'
+          : err instanceof CepRequestError
+            ? 'Não foi possível buscar o CEP. Preencha manualmente.'
+            : 'Erro ao buscar CEP.'
+      setErrors((prev) => ({ ...prev, cep: message }))
+    } finally {
+      if (cepAbortRef.current === controller) {
+        cepAbortRef.current = null
+        setIsFetchingCep(false)
+      }
+    }
+  }
+
   function showToast(message: string, type: 'success' | 'error') {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3500)
@@ -340,7 +385,7 @@ export function PatientEditPage() {
     }
 
     if (!form.tutorFullName.trim()) nextErrors.tutorFullName = 'Nome do tutor e obrigatorio'
-    if (form.tutorCpf.replace(/\D/g, '').length !== 11) nextErrors.tutorCpf = 'CPF invalido'
+    if (!isValidCpf(form.tutorCpf)) nextErrors.tutorCpf = 'CPF invalido'
     if (form.tutorPhone.replace(/\D/g, '').length < 10) nextErrors.tutorPhone = 'Telefone invalido'
     if (!form.tutorEmail.trim()) nextErrors.tutorEmail = 'Email e obrigatorio'
     if (!form.tutorInsurance.trim()) nextErrors.tutorInsurance = 'Convenio e obrigatorio'
@@ -389,7 +434,7 @@ export function PatientEditPage() {
         microchip: microchipPayload,
         photoUrl: form.photoUrl || undefined,
         tutor: {
-          cpf: form.tutorCpf.replace(/\D/g, ''),
+          cpf: onlyDigits(form.tutorCpf),
           fullName: form.tutorFullName,
           phone: form.tutorPhone.replace(/\D/g, ''),
           email: form.tutorEmail,
@@ -646,7 +691,8 @@ export function PatientEditPage() {
         <div className="form-row form-row-4">
           <div className="form-group">
             <label className="register-label" htmlFor="cep">CEP: <span className="required">*</span></label>
-            <input id="cep" className="register-input" value={form.cep} onChange={(e) => updateField('cep', maskCep(e.target.value))} maxLength={9} />
+            <input id="cep" className="register-input" value={form.cep} onChange={(e) => void handleCepChange(e.target.value)} maxLength={9} inputMode="numeric" />
+            {isFetchingCep && <span className="field-hint">Buscando endereço…</span>}
             {errors.cep && <span className="field-error">{errors.cep}</span>}
           </div>
 
@@ -683,7 +729,7 @@ export function PatientEditPage() {
 
           <div className="form-group">
             <label className="register-label" htmlFor="address-number">Numero: <span className="required">*</span></label>
-            <input id="address-number" className="register-input" value={form.addressNumber} onChange={(e) => updateField('addressNumber', e.target.value)} />
+            <input id="address-number" ref={addressNumberRef} className="register-input" value={form.addressNumber} onChange={(e) => updateField('addressNumber', e.target.value)} />
             {errors.addressNumber && <span className="field-error">{errors.addressNumber}</span>}
           </div>
 

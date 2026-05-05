@@ -1,8 +1,10 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Save, PawPrint, User, Plus } from 'lucide-react'
 import { api } from '../../lib/api'
 import { getErrorMessage } from '../../lib/errorMessage'
+import { isValidCpf, maskCpf, onlyDigits } from '../../lib/documents'
+import { CepNotFoundError, CepRequestError, fetchAddressByCep } from '../../lib/cep'
 import { TutorsService } from '../../services/tutors.service'
 import type { Tutor } from '../../types'
 import '../../styles/patients.css'
@@ -87,14 +89,6 @@ const initialForm: FormData = {
 }
 
 // Masks
-function maskCpf(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 11)
-  return digits
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-}
-
 function maskPhone(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 11)
   if (digits.length <= 10) {
@@ -245,6 +239,9 @@ export function PatientRegisterPage() {
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
+  const [isFetchingCep, setIsFetchingCep] = useState(false)
+  const cepAbortRef = useRef<AbortController | null>(null)
+  const addressNumberRef = useRef<HTMLInputElement | null>(null)
 
   function updateField(field: keyof FormData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -254,6 +251,54 @@ export function PatientRegisterPage() {
         delete next[field]
         return next
       })
+    }
+  }
+
+  async function handleCepChange(rawValue: string) {
+    const masked = maskCep(rawValue)
+    updateField('cep', masked)
+
+    const digits = masked.replace(/\D/g, '')
+    if (digits.length !== 8) return
+
+    cepAbortRef.current?.abort()
+    const controller = new AbortController()
+    cepAbortRef.current = controller
+
+    setIsFetchingCep(true)
+    try {
+      const addr = await fetchAddressByCep(digits, controller.signal)
+      setForm((prev) => ({
+        ...prev,
+        state: addr.state || prev.state,
+        city: addr.city || prev.city,
+        neighborhood: addr.neighborhood || prev.neighborhood,
+        street: addr.street || prev.street,
+      }))
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next.cep
+        if (addr.state) delete next.state
+        if (addr.city) delete next.city
+        if (addr.neighborhood) delete next.neighborhood
+        if (addr.street) delete next.street
+        return next
+      })
+      addressNumberRef.current?.focus()
+    } catch (err) {
+      if ((err as DOMException)?.name === 'AbortError') return
+      const message =
+        err instanceof CepNotFoundError
+          ? 'CEP não encontrado'
+          : err instanceof CepRequestError
+            ? 'Não foi possível buscar o CEP. Preencha manualmente.'
+            : 'Erro ao buscar CEP.'
+      setErrors((prev) => ({ ...prev, cep: message }))
+    } finally {
+      if (cepAbortRef.current === controller) {
+        cepAbortRef.current = null
+        setIsFetchingCep(false)
+      }
     }
   }
 
@@ -354,7 +399,7 @@ export function PatientRegisterPage() {
     setSelectedTutorId('')
 
     try {
-      const cpfDigits = query.replace(/\D/g, '')
+      const cpfDigits = onlyDigits(query)
       let tutors: Tutor[] = []
 
       if (cpfDigits.length >= 3) {
@@ -367,7 +412,7 @@ export function PatientRegisterPage() {
       const normalizedQuery = normalizeText(query)
       const filtered = tutors.filter((tutor) => {
         const tutorName = normalizeText(tutor.fullName)
-        const tutorCpfDigits = tutor.cpf.replace(/\D/g, '')
+        const tutorCpfDigits = onlyDigits(tutor.cpf)
         const matchesName = tutorName.includes(normalizedQuery)
         const matchesCpf = cpfDigits.length > 0 && tutorCpfDigits.includes(cpfDigits)
         return matchesName || matchesCpf
@@ -462,7 +507,7 @@ export function PatientRegisterPage() {
 
     if (tutorMode === 'new') {
       if (!form.tutorFullName.trim()) newErrors.tutorFullName = 'Nome do tutor é obrigatório'
-      if (!form.tutorCpf || form.tutorCpf.replace(/\D/g, '').length !== 11) newErrors.tutorCpf = 'CPF inválido'
+      if (!form.tutorCpf || !isValidCpf(form.tutorCpf)) newErrors.tutorCpf = 'CPF inválido'
       if (!form.tutorPhone || form.tutorPhone.replace(/\D/g, '').length < 10) newErrors.tutorPhone = 'Telefone inválido'
     }
 
@@ -498,7 +543,7 @@ export function PatientRegisterPage() {
           form.cep && `CEP: ${form.cep}`,
         ].filter(Boolean)
         const addressStr = addressParts.length > 0 ? addressParts.join(', ') : undefined
-        const cpfClean = form.tutorCpf.replace(/\D/g, '')
+        const cpfClean = onlyDigits(form.tutorCpf)
         const phoneClean = form.tutorPhone.replace(/\D/g, '')
 
         const tutorPayload = {
@@ -1032,9 +1077,12 @@ export function PatientRegisterPage() {
               placeholder="_____-___"
               value={form.cep}
               disabled={tutorMode === 'existing'}
-              onChange={(e) => updateField('cep', maskCep(e.target.value))}
+              onChange={(e) => void handleCepChange(e.target.value)}
               maxLength={9}
+              inputMode="numeric"
             />
+            {isFetchingCep && <span className="field-hint">Buscando endereço…</span>}
+            {errors.cep && <span className="field-error">{errors.cep}</span>}
           </div>
 
           {/* Estado */}
@@ -1113,6 +1161,7 @@ export function PatientRegisterPage() {
             </label>
             <input
               id="address-number"
+              ref={addressNumberRef}
               className="register-input"
               type="text"
               placeholder="Número"
