@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, Save, PawPrint, User, ImagePlus, CircleHelp } from 'lucide-react'
 import { api } from '../../lib/api'
 import { getErrorMessage } from '../../lib/errorMessage'
+import { isValidCpf, maskCpf, onlyDigits } from '../../lib/documents'
 import type { Patient } from '../../types'
 import '../../styles/patients.css'
 
@@ -79,14 +80,6 @@ const initialForm: EditFormData = {
   street: '',
   addressNumber: '',
   complement: '',
-}
-
-function maskCpf(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 11)
-  return digits
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
 }
 
 function maskPhone(value: string): string {
@@ -340,7 +333,7 @@ export function PatientEditPage() {
     }
 
     if (!form.tutorFullName.trim()) nextErrors.tutorFullName = 'Nome do tutor e obrigatorio'
-    if (form.tutorCpf.replace(/\D/g, '').length !== 11) nextErrors.tutorCpf = 'CPF invalido'
+    if (!isValidCpf(form.tutorCpf)) nextErrors.tutorCpf = 'CPF invalido'
     if (form.tutorPhone.replace(/\D/g, '').length < 10) nextErrors.tutorPhone = 'Telefone invalido'
     if (!form.tutorEmail.trim()) nextErrors.tutorEmail = 'Email e obrigatorio'
     if (!form.tutorInsurance.trim()) nextErrors.tutorInsurance = 'Convenio e obrigatorio'
@@ -389,7 +382,7 @@ export function PatientEditPage() {
         microchip: microchipPayload,
         photoUrl: form.photoUrl || undefined,
         tutor: {
-          cpf: form.tutorCpf.replace(/\D/g, ''),
+          cpf: onlyDigits(form.tutorCpf),
           fullName: form.tutorFullName,
           phone: form.tutorPhone.replace(/\D/g, ''),
           email: form.tutorEmail,

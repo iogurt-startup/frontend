@@ -4,6 +4,7 @@ import { useAuthStore } from '../../stores/authStore'
 import { authService } from '../../lib/authService'
 import { clinicService } from '../../lib/clinicService'
 import { getErrorMessage } from '../../lib/errorMessage'
+import { isValidCnpj, maskCnpj, onlyDigits } from '../../lib/documents'
 import type { User } from '../../types'
 import '../../styles/settings.css'
 
@@ -15,19 +16,6 @@ function patchCurrentUser(partial: Partial<User>) {
 }
 
 type FeedbackState = { kind: 'success' | 'error'; message: string } | null
-
-function formatCnpj(value: string) {
-  const digits = value.replace(/\D/g, '').slice(0, 14)
-
-  if (digits.length <= 2) return digits
-  if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`
-  if (digits.length <= 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`
-  if (digits.length <= 12) {
-    return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`
-  }
-
-  return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`
-}
 
 function formatPhone(value: string) {
   const digits = value.replace(/\D/g, '').slice(0, 11)
@@ -92,7 +80,7 @@ export function SettingsPage() {
         if (clinicRes) {
           setClinicForm({
             name: clinicRes.name ?? '',
-            cnpj: formatCnpj(clinicRes.cnpj ?? ''),
+            cnpj: maskCnpj(clinicRes.cnpj ?? ''),
             address: clinicRes.address ?? '',
             phone: formatPhone(clinicRes.phone ?? ''),
           })
@@ -117,18 +105,24 @@ export function SettingsPage() {
 
   async function handleClinicSubmit(event: React.FormEvent) {
     event.preventDefault()
-    setSavingClinic(true)
     setClinicFeedback(null)
+    const cnpjDigits = onlyDigits(clinicForm.cnpj)
+    if (cnpjDigits && !isValidCnpj(cnpjDigits)) {
+      setClinicFeedback({ kind: 'error', message: 'CNPJ inválido.' })
+      return
+    }
+
+    setSavingClinic(true)
     try {
       const updated = await clinicService.updateMyClinic({
         name: clinicForm.name.trim() || undefined,
-        cnpj: clinicForm.cnpj.trim() || null,
+        cnpj: cnpjDigits || null,
         address: clinicForm.address.trim() || null,
         phone: clinicForm.phone.trim() || null,
       })
       setClinicForm({
         name: updated.name ?? '',
-        cnpj: formatCnpj(updated.cnpj ?? ''),
+        cnpj: maskCnpj(updated.cnpj ?? ''),
         address: updated.address ?? '',
         phone: formatPhone(updated.phone ?? ''),
       })
@@ -220,7 +214,7 @@ export function SettingsPage() {
               <input
                 type="text"
                 value={clinicForm.cnpj}
-                onChange={(e) => setClinicForm((p) => ({ ...p, cnpj: formatCnpj(e.target.value) }))}
+                onChange={(e) => setClinicForm((p) => ({ ...p, cnpj: maskCnpj(e.target.value) }))}
                 placeholder="00.000.000/0000-00"
                 inputMode="numeric"
                 maxLength={18}
