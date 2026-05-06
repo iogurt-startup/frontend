@@ -13,6 +13,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import { clinicalService } from '../../lib/clinicalService'
+import { getErrorMessage } from '../../lib/errorMessage'
 import {
   getCareFormValues,
   getClinicalRecordPayload,
@@ -160,10 +161,14 @@ function buildHistorySummary(patient: Patient, history: ClinicalHistoryItem[], v
           : 'Sem dados vacinais',
     previousVisits: history
       .filter((item) => item.finalized)
-      .slice(0, 3)
       .map((item) => ({
         id: item.id,
-        label: `${formatDate(item.appointment?.dateTime ?? item.createdAt)} — ${item.diagnosis || item.clinicalNotes || 'Atendimento registrado'}`,
+        date: formatDate(item.appointment?.dateTime ?? item.createdAt),
+        summary:
+          item.aiSummary?.trim() ||
+          item.diagnosis?.trim() ||
+          item.clinicalNotes?.trim() ||
+          'Atendimento registrado sem resumo disponível.',
       })),
     lastDiagnosis: lastFinished?.diagnosis || null,
   }
@@ -226,13 +231,9 @@ export function ClinicalCarePage() {
         setVaccinations(vaccinationsData)
         setForm(nextForm)
         setSavedForm(nextForm)
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (cancelled) return
-        setError(
-          err.response?.data?.error ||
-            err.response?.data?.message ||
-            'Não foi possível carregar o atendimento.',
-        )
+        setError(getErrorMessage(err, 'Não foi possível carregar o atendimento.'))
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -293,14 +294,8 @@ export function ClinicalCarePage() {
       setForm(nextForm)
       setSavedForm(nextForm)
       setToast({ type: 'success', message: 'Atendimento salvo com sucesso.' })
-    } catch (err: any) {
-      setToast({
-        type: 'error',
-        message:
-          err.response?.data?.error ||
-          err.response?.data?.message ||
-          'Não foi possível salvar o atendimento.',
-      })
+    } catch (err: unknown) {
+      setToast({ type: 'error', message: getErrorMessage(err, 'Não foi possível salvar o atendimento.') })
     } finally {
       setSaving(false)
     }
@@ -326,14 +321,8 @@ export function ClinicalCarePage() {
       await refreshHistoryData()
       setToast({ type: 'success', message: 'Atendimento finalizado com sucesso.' })
       setActiveTab('prontuario')
-    } catch (err: any) {
-      setToast({
-        type: 'error',
-        message:
-          err.response?.data?.error ||
-          err.response?.data?.message ||
-          'Não foi possível finalizar o atendimento.',
-      })
+    } catch (err: unknown) {
+      setToast({ type: 'error', message: getErrorMessage(err, 'Não foi possível finalizar o atendimento.') })
     } finally {
       setFinalizing(false)
     }
@@ -348,14 +337,8 @@ export function ClinicalCarePage() {
       const url = URL.createObjectURL(blob)
       window.open(url, '_blank', 'noopener,noreferrer')
       window.setTimeout(() => URL.revokeObjectURL(url), 10_000)
-    } catch (err: any) {
-      setToast({
-        type: 'error',
-        message:
-          err.response?.data?.error ||
-          err.response?.data?.message ||
-          'Não foi possível gerar o PDF do receituário.',
-      })
+    } catch (err: unknown) {
+      setToast({ type: 'error', message: getErrorMessage(err, 'Não foi possível gerar o PDF do receituário.') })
     } finally {
       setPrinting(false)
     }
@@ -395,7 +378,10 @@ export function ClinicalCarePage() {
               {summary.previousVisits.length > 0 ? (
                 <ul className="care-previous-list">
                   {summary.previousVisits.map((item) => (
-                    <li key={item.id}>{item.label}</li>
+                    <li key={item.id}>
+                      <span>{item.date}</span>
+                      <p>{item.summary}</p>
+                    </li>
                   ))}
                 </ul>
               ) : (
@@ -448,7 +434,7 @@ export function ClinicalCarePage() {
             disabled={!record.finalized || printing}
           >
             <Printer size={16} />
-            {printing ? 'Gerando PDF...' : 'Imprimir'}
+            {printing ? 'Gerando PDF...' : 'Gerar Receita'}
           </button>
           <button
             className="care-top-action care-top-action-primary"

@@ -32,7 +32,8 @@ export function ScheduleModal({ isOpen, onClose, onSuccess }: ScheduleModalProps
   const [tutorId, setTutorId] = useState('')
   const [patientId, setPatientId] = useState('')
   const [data, setData] = useState('')
-  const [horario, setHorario] = useState('')
+  const [horarioInicio, setHorarioInicio] = useState('')
+  const [horarioFim, setHorarioFim] = useState('')
   const [category, setCategory] = useState('')
   const [observacao, setObservacao] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -74,7 +75,8 @@ export function ScheduleModal({ isOpen, onClose, onSuccess }: ScheduleModalProps
     setTutorId('')
     setPatientId('')
     setData('')
-    setHorario('')
+    setHorarioInicio('')
+    setHorarioFim('')
     setCategory('')
     setObservacao('')
     setSubmitError('')
@@ -86,7 +88,7 @@ export function ScheduleModal({ isOpen, onClose, onSuccess }: ScheduleModalProps
   }
 
   const handleSubmit = async () => {
-    if (!patientId || !data || !horario || !category) {
+    if (!patientId || !data || !horarioInicio || !horarioFim || !category) {
       setSubmitError('Preencha todos os campos obrigatórios.')
       return
     }
@@ -96,7 +98,8 @@ export function ScheduleModal({ isOpen, onClose, onSuccess }: ScheduleModalProps
       return
     }
 
-    const dateTime = new Date(`${data}T${horario}`).toISOString()
+    const dateTime = new Date(`${data}T${horarioInicio}`).toISOString()
+    const endDateTime = new Date(`${data}T${horarioFim}`).toISOString()
 
     setIsSubmitting(true)
     setSubmitError('')
@@ -106,6 +109,7 @@ export function ScheduleModal({ isOpen, onClose, onSuccess }: ScheduleModalProps
         patientId,
         vetId: user.id,
         dateTime,
+        endDateTime,
         category: category as AppointmentCategory,
         observation: observacao || undefined,
       })
@@ -209,24 +213,39 @@ export function ScheduleModal({ isOpen, onClose, onSuccess }: ScheduleModalProps
           </div>
 
           <div className="form-group">
-            <label className="form-label">
-              Horário : <span style={{ color: 'var(--color-danger)' }}>*</span>
-            </label>
-            <CustomSelect
-              value={horario}
-              onChange={setHorario}
-              options={TIME_SLOTS}
-              placeholder="Selecionar horário"
-            />
-          </div>
-
-          <div className="form-group">
             <label className="form-label">Veterinário :</label>
             <input
               type="text"
               className="modal-form-input"
               value={user?.name ?? '—'}
               disabled
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">
+              Início : <span style={{ color: 'var(--color-danger)' }}>*</span>
+            </label>
+            <CustomSelect
+              value={horarioInicio}
+              onChange={(val) => {
+                setHorarioInicio(val)
+                if (horarioFim && horarioFim <= val) setHorarioFim('')
+              }}
+              options={TIME_SLOTS}
+              placeholder="Selecionar início"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">
+              Fim : <span style={{ color: 'var(--color-danger)' }}>*</span>
+            </label>
+            <CustomSelect
+              value={horarioFim}
+              onChange={setHorarioFim}
+              options={horarioInicio ? TIME_SLOTS.filter((t) => t > horarioInicio) : []}
+              placeholder={horarioInicio ? 'Selecionar fim' : 'Selecione o início primeiro'}
             />
           </div>
 

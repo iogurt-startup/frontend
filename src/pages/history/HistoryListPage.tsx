@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRightToLine, Calendar, Filter, LoaderCircle, Search } from 'lucide-react'
+import { getErrorMessage } from '../../lib/errorMessage'
 import { historyService } from '../../lib/historyService'
 import type { ClinicHistoryListItem } from '../../types'
 import '../../styles/history.css'
@@ -75,13 +76,9 @@ export function HistoryListPage() {
         if (!cancelled) {
           setItems(data)
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!cancelled) {
-          setError(
-            err.response?.data?.error ||
-              err.response?.data?.message ||
-              'Não foi possível carregar o histórico da clínica.',
-          )
+          setError(getErrorMessage(err, 'Não foi possível carregar o histórico da clínica.'))
         }
       } finally {
         if (!cancelled) setLoading(false)

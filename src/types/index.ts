@@ -11,8 +11,32 @@ export interface User {
   name: string
   role: Role
   avatarUrl?: string | null
+  crmv?: string | null
+  clinicId?: string
   createdAt: string
   updatedAt: string
+}
+
+export interface Clinic {
+  id: string
+  name: string
+  cnpj?: string | null
+  address?: string | null
+  phone?: string | null
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface UpdateClinicRequest {
+  name?: string
+  cnpj?: string | null
+  address?: string | null
+  phone?: string | null
+}
+
+export interface UpdateUserProfileRequest {
+  name?: string
+  crmv?: string | null
 }
 
 export interface AuthResponse {
@@ -31,6 +55,10 @@ export interface RegisterRequest {
   email: string
   password: string
   clinicName: string
+  clinicCnpj?: string
+  clinicAddress?: string
+  clinicPhone?: string
+  crmv?: string
 }
 
 // ── Tutor ─────────────────────────────────────────
@@ -147,6 +175,7 @@ export interface Appointment {
   patientId: string
   vetId: string
   dateTime: string
+  endDateTime?: string | null
   category: AppointmentCategory
   status: AppointmentStatus
   observation?: string | null
@@ -161,6 +190,7 @@ export interface CreateAppointmentRequest {
   patientId: string
   vetId: string
   dateTime: string
+  endDateTime?: string
   category: AppointmentCategory
   observation?: string
 }
@@ -262,6 +292,48 @@ export interface AdminMetrics {
   totalPatients: number
   appointmentsThisWeek: number
   appointmentsThisMonth: number
+  timeline: {
+    past: number
+    future: number
+  }
+  week: {
+    total: number
+    scheduled: number
+    inProgress: number
+    completed: number
+    cancelled: number
+  }
+  month: {
+    total: number
+    scheduled: number
+    inProgress: number
+    completed: number
+    cancelled: number
+  }
+  categories: {
+    week: {
+      observation: number
+      vaccination: number
+      exam: number
+      surgical: number
+    }
+    month: {
+      observation: number
+      vaccination: number
+      exam: number
+      surgical: number
+    }
+  }
+}
+
+export interface AdminAppointmentsTrendPoint {
+  date: string
+  totalAppointments: number
+}
+
+export interface AdminAppointmentsTrendResponse {
+  days: number
+  trend: AdminAppointmentsTrendPoint[]
 }
 
 // ── Portal ────────────────────────────────────────
@@ -277,6 +349,34 @@ export interface TutorAlert {
   message: string
   patientName: string
   date?: string
+}
+
+export interface TutorPortalClinicalRecord {
+  id: string
+  createdAt: string
+  diagnosis?: string | null
+  pendingDiagnosis?: string | null
+  prescriptions?: string | null
+  routineGuidance?: string | null
+  aiSummary?: string | null
+  weightKg?: number | null
+  finalized: boolean
+  vet?: {
+    name: string
+  }
+}
+
+export interface TutorPortalPatientHistory {
+  patient: Patient
+  clinicalRecords: TutorPortalClinicalRecord[]
+  vaccinations: Vaccination[]
+  examFiles: ExamFile[]
+}
+
+export interface CreateTutorAccountResponse {
+  userId: string
+  email: string
+  temporaryPassword: string
 }
 
 // ── Paginated ─────────────────────────────────────

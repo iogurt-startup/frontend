@@ -349,6 +349,47 @@
   margin-bottom: var(--space-lg);
 }
 
+.patient-details-section-title.with-action {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.patient-details-section-title-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.patient-details-tutor-access-btn {
+  border: 1px solid var(--pink-200);
+  background: #fff;
+  color: var(--pink-500);
+  border-radius: 999px;
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.patient-details-tutor-access-btn:hover {
+  background: var(--pink-50);
+}
+
+.patient-details-tutor-access-tag {
+  border-radius: 999px;
+  background: #e9f8ef;
+  color: #2b8a57;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
 .patient-details-section-title h2 {
   font-size: 1.25rem;
   font-weight: 700;
@@ -881,6 +922,12 @@
   margin-top: 4px;
 }
 
+.field-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #6b7280);
+  margin-top: 4px;
+}
+
 /* ── Toast notification ──────────────────────────── */
 .register-toast {
   position: fixed;
@@ -955,6 +1002,71 @@
   color: #2f3238;
   font-size: 1.05rem;
   line-height: 1.45;
+}
+
+.patient-details-access-form {
+  margin-top: 16px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.patient-details-access-form label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.patient-details-access-form input {
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.patient-details-access-form input:focus {
+  border-color: var(--pink-300);
+}
+
+.patient-details-access-result {
+  margin-top: 16px;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+  text-align: left;
+}
+
+.patient-details-access-result div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.patient-details-access-result span {
+  color: var(--gray-600);
+  font-size: 0.84rem;
+}
+
+.patient-details-access-result strong {
+  color: var(--gray-900);
+  font-size: 0.86rem;
+  max-width: 55%;
+  text-align: right;
+  word-break: break-all;
+}
+
+.patient-details-access-feedback {
+  margin-top: 8px;
+  color: var(--color-danger);
+  font-size: 0.8rem;
+}
+
+.patient-details-access-feedback.success {
+  color: var(--color-success);
 }
 
 .patient-edit-modal-actions {

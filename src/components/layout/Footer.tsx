@@ -1,4 +1,4 @@
-import { Linkedin, Mail } from 'lucide-react'
+import { Mail } from 'lucide-react'
 import '../../styles/footer.css'
 
 export function Footer() {
@@ -19,7 +19,9 @@ export function Footer() {
               </svg>
             </a>
             <a href="#" className="social-link" aria-label="LinkedIn" title="LinkedIn">
-              <Linkedin size={20} />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4.98 3.5C4.98 4.88 3.87 6 2.49 6S0 4.88 0 3.5 1.11 1 2.49 1s2.49 1.12 2.49 2.5zM.5 8h4v12h-4zM8 8h3.84v1.71h.05c.53-1.01 1.83-2.08 3.77-2.08 4.03 0 4.77 2.65 4.77 6.09V20h-4v-5.35c0-1.28-.02-2.92-1.78-2.92-1.78 0-2.06 1.39-2.06 2.83V20h-4z" />
+              </svg>
             </a>
             <a href="#" className="social-link" aria-label="Twitter/X" title="Twitter/X">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

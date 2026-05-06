@@ -8,16 +8,17 @@ import { LandingPage } from './pages/LandingPage'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
-
-// Dev Pages
-import { TutorDevPage } from './pages/TutorDevPage'
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
+import { TutorLoginPage } from './pages/auth/TutorLoginPage'
 
 // Layout
 import { AppLayout } from './components/layout/AppLayout'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { TutorPortalLayout } from './components/portal/TutorPortalLayout'
 
 // Pages
 import { HomePage } from './pages/home/HomePage'
+import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { PatientsListPage } from './pages/patients/PatientsListPage'
 import { PatientRegisterPage } from './pages/patients/PatientRegisterPage'
 import { PatientDetailsPage } from './pages/patients/PatientDetailsPage'
@@ -26,13 +27,21 @@ import { AgendaPage } from './pages/agenda/AgendaPage'
 import { ClinicalCarePage } from './pages/clinical/ClinicalCarePage'
 import { HistoryListPage } from './pages/history/HistoryListPage'
 import { HistoryDetailsPage } from './pages/history/HistoryDetailsPage'
+import { SettingsPage } from './pages/settings/SettingsPage'
+import { TutorPortalHomePage } from './pages/portal/TutorPortalHomePage'
+import { TutorPortalHistoryPage } from './pages/portal/TutorPortalHistoryPage'
+import { TutorPortalHistoryDetailsPage } from './pages/portal/TutorPortalHistoryDetailsPage'
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const user = useAuthStore((s) => s.user)
 
   if (isAuthenticated) {
-    return <Navigate to={user?.role === 'TUTOR' ? '/portal' : '/dashboard'} replace />
+    if (user?.role === 'TUTOR') {
+      return <Navigate to="/portal" replace />
+    }
+
+    return <Navigate to="/home" replace />
   }
   return <>{children}</>
 }
@@ -76,17 +85,31 @@ export default function App() {
             </PublicRoute>
           }
         />
-
-        {/* Tutor Dev Page */}
         <Route
-          path="/tutor-portal"
-          element={<TutorDevPage />}
+          path="/reset-password"
+          element={
+            <PublicRoute>
+              <ResetPasswordPage />
+            </PublicRoute>
+          }
         />
+
+        <Route
+          path="/portal/login"
+          element={
+            <PublicRoute>
+              <TutorLoginPage />
+            </PublicRoute>
+          }
+        />
+
+        {/* Compatibilidade com rota antiga */}
+        <Route path="/tutor-portal" element={<Navigate to="/portal/login" replace />} />
 
         {/* Protected: OWNER + VET */}
         <Route element={<ProtectedRoute allowedRoles={['OWNER', 'VET']} />}>
           <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<HomePage />} />
+            <Route path="/home" element={<HomePage />} />
             <Route path="pacientes" element={<PatientsListPage />} />
             <Route path="pacientes/cadastrar" element={<PatientRegisterPage />} />
             <Route path="pacientes/:id" element={<PatientDetailsPage />} />
@@ -98,12 +121,24 @@ export default function App() {
             <Route path="agenda" element={<AgendaPage />} />
             <Route path="historico" element={<HistoryListPage />} />
             <Route path="historico/:recordId/pacientes/:patientId" element={<HistoryDetailsPage />} />
+            <Route path="configuracoes" element={<SettingsPage />} />
+
+            <Route element={<ProtectedRoute allowedRoles={['OWNER']} />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+            </Route>
           </Route>
         </Route>
 
         {/* Protected: TUTOR */}
         <Route element={<ProtectedRoute allowedRoles={['TUTOR']} />}>
-          <Route path="portal" element={<div>Portal do Tutor (em desenvolvimento)</div>} />
+          <Route path="portal" element={<TutorPortalLayout />}>
+            <Route index element={<TutorPortalHomePage />} />
+            <Route path="historico" element={<TutorPortalHistoryPage />} />
+            <Route
+              path="historico/:recordId/pacientes/:patientId"
+              element={<TutorPortalHistoryDetailsPage />}
+            />
+          </Route>
         </Route>
 
         {/* Catch-all */}

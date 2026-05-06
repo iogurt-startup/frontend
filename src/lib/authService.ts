@@ -3,6 +3,8 @@ import type {
   AuthResponse,
   LoginRequest,
   RegisterRequest,
+  UpdateUserProfileRequest,
+  User,
 } from '../types'
 
 interface GoogleAuthResponse extends AuthResponse {
@@ -32,5 +34,15 @@ export const authService = {
   async googleLogin(accessToken: string): Promise<GoogleAuthResponse> {
     const response = await api.post<GoogleAuthResponse>('/auth/google', { accessToken })
     return response.data
+  },
+
+  async getMe(): Promise<User> {
+    const response = await api.get<{ user: User }>('/auth/me')
+    return response.data.user
+  },
+
+  async updateMe(data: UpdateUserProfileRequest): Promise<User> {
+    const response = await api.patch<{ user: User }>('/auth/me', data)
+    return response.data.user
   },
 }

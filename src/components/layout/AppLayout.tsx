@@ -10,10 +10,12 @@ export function AppLayout() {
   const showMobileMenuButton = useMemo(
     () =>
       [
+        '/home',
         '/dashboard',
         '/pacientes',
         '/agenda',
         '/historico',
+        '/configuracoes',
         '/historico/:recordId/pacientes/:patientId',
         '/atendimentos/:appointmentId/pacientes/:patientId',
         '/pacientes/:id',

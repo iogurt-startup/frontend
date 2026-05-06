@@ -1,11 +1,10 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import '../styles/landing.css'
 
 export function LandingPage() {
   const navigate = useNavigate()
-  const location = useLocation()
   const [showDropdown, setShowDropdown] = useState(false)
 
   const handleVeterinarian = () => {
@@ -14,7 +13,7 @@ export function LandingPage() {
   }
 
   const handleTutor = () => {
-    navigate('/tutor-portal')
+    navigate('/portal/login')
     setShowDropdown(false)
   }
 
@@ -65,6 +64,11 @@ export function LandingPage() {
           </button>
         </div>
       </section>
+
+      <div className="landing-slogan-section">
+        <h2>Simplifique seu dia a dia com IA e gestão completa!</h2>
+      </div>
+
 
       <section id="sobre" className="landing-section landing-about">
         <div className="landing-section-container">
