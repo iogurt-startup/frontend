@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Clock3, Home, LogOut, Menu, X } from 'lucide-react'
+import { Clock3, Heart, Home, LogOut, Menu, X } from 'lucide-react'
 import { authService } from '../../lib/authService'
 import { useAuthStore } from '../../stores/authStore'
 import '../../styles/portal.css'
 
 const navItems = [
   { to: '/portal', label: 'Home', icon: Home, end: true },
-  { to: '/portal/historico', label: 'Historico', icon: Clock3, end: false },
+  { to: '/portal/cuidados', label: 'iougurt Care', icon: Heart, end: false },
+  { to: '/portal/historico', label: 'Histórico', icon: Clock3, end: false },
 ]
 
 export function TutorPortalLayout() {

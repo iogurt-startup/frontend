@@ -31,6 +31,7 @@ import { SettingsPage } from './pages/settings/SettingsPage'
 import { TutorPortalHomePage } from './pages/portal/TutorPortalHomePage'
 import { TutorPortalHistoryPage } from './pages/portal/TutorPortalHistoryPage'
 import { TutorPortalHistoryDetailsPage } from './pages/portal/TutorPortalHistoryDetailsPage'
+import { IougurtCarePage } from './pages/portal/IougurtCarePage'
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -138,6 +139,7 @@ export default function App() {
               path="historico/:recordId/pacientes/:patientId"
               element={<TutorPortalHistoryDetailsPage />}
             />
+            <Route path="cuidados" element={<IougurtCarePage />} />
           </Route>
         </Route>
 
