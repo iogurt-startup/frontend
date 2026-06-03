@@ -66,7 +66,7 @@ export function RegisterPage() {
         <div className="auth-logo">
           <span className="auth-logo-text">
             <CatFaceSvg />
-            iougurt
+            ıougurt
           </span>
         </div>
 
