@@ -64,15 +64,9 @@ export function CatFaceSvg() {
       <polygon points="85,45 75,5 50,30" />
       {/* Head */}
       <circle cx="50" cy="58" r="35" />
-      {/* Eyes */}
-      <circle cx="38" cy="52" r="5" fill="white" />
-      <circle cx="62" cy="52" r="5" fill="white" />
-      <circle cx="38" cy="52" r="2.5" fill="#333" />
-      <circle cx="62" cy="52" r="2.5" fill="#333" />
-      {/* Nose */}
-      <polygon points="50,62 46,58 54,58" fill="#E8819E" />
-      {/* Mouth */}
-      <path d="M46,65 Q50,70 54,65" stroke="#E8819E" strokeWidth="1.5" fill="none" />
+      {/* Eyes - Solid teal/green-blue */}
+      <circle cx="38" cy="52" r="5" fill="#3CD8B6" />
+      <circle cx="62" cy="52" r="5" fill="#3CD8B6" />
     </svg>
   )
 }

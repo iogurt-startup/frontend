@@ -18,7 +18,7 @@ export function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  
+
   const [successMessage, setSuccessMessage] = useState('')
 
   const setAuth = useAuthStore((s) => s.setAuth)
@@ -30,7 +30,7 @@ export function LoginPage() {
       setSuccessMessage(location.state.message)
       // Clear state so it doesn't persist on refresh
       window.history.replaceState({}, document.title)
-      
+
       // Auto-hide after 5 seconds
       const timer = setTimeout(() => {
         setSuccessMessage('')
@@ -97,7 +97,7 @@ export function LoginPage() {
         <div className="auth-logo">
           <span className="auth-logo-text">
             <CatFaceSvg />
-            iougurt
+            ıougurt
           </span>
         </div>
 
