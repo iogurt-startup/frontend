@@ -1,7 +1,26 @@
+# Frontend. Roda junto com o backend compartilhando a rede `iougurt-shared`,
+# então o nginx alcança a API pelo nome do serviço (http://api:3000) — sem IP
+# hardcoded e sem depender de host/porta publicada.
+#
+# Subir os dois (em qualquer ordem; o primeiro cria a rede compartilhada):
+#   cd backend  && docker compose up -d
+#   cd frontend && docker compose up -d --build
+#
+# (Alternativa: o docker-compose.yml da raiz sobe tudo num comando só.)
 services:
   frontend:
     build: .
     ports:
-      - "8080:80"
+      - "${FRONTEND_PORT:-8080}:80"
+    networks:
+      - iougurt
+    environment:
+      # Upstream da API injetado no nginx via envsubst (sem IP hardcoded).
+      API_UPSTREAM: ${API_UPSTREAM:-http://api:3000}
     env_file:
       - .env
+
+# Mesma rede compartilhada declarada no backend/docker-compose.yml.
+networks:
+  iougurt:
+    name: iougurt-shared
