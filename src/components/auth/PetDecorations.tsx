@@ -64,9 +64,6 @@ export function CatFaceSvg() {
       <polygon points="85,45 75,5 50,30" />
       {/* Head */}
       <circle cx="50" cy="58" r="35" />
-      {/* Eyes - Solid teal/green-blue */}
-      <circle cx="38" cy="52" r="5" fill="#3CD8B6" />
-      <circle cx="62" cy="52" r="5" fill="#3CD8B6" />
     </svg>
   )
 }

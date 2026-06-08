@@ -5,7 +5,7 @@ import { Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react'
 import { authService } from '../../lib/authService'
 import { getErrorMessage } from '../../lib/errorMessage'
 import { useAuthStore } from '../../stores/authStore'
-import { PawSvg, FishSvg, BoneSvg, CatFaceSvg } from '../../components/auth/PetDecorations'
+import { PawSvg, FishSvg, BoneSvg } from '../../components/auth/PetDecorations'
 import { isGoogleOAuthConfigured } from '../../lib/googleOAuth'
 import '../../styles/auth.css'
 
@@ -96,8 +96,7 @@ export function LoginPage() {
 
         <div className="auth-logo">
           <span className="auth-logo-text">
-            <CatFaceSvg />
-            ıougurt
+            iougurt
           </span>
         </div>
 
