@@ -168,22 +168,22 @@
 }
 
 /* Agenda colors */
-.timeline-card--cyan {
+.timeline-card.category-cyan {
   background: #E0F7FA;
   border-color: #B2EBF2;
 }
 
-.timeline-card--yellow {
+.timeline-card.category-yellow {
   background: #FFF9C4;
   border-color: #FFF59D;
 }
 
-.timeline-card--pink {
+.timeline-card.category-pink {
   background: #FCE4EC;
   border-color: #F8BBD0;
 }
 
-.timeline-card--gray {
+.timeline-card.category-gray {
   background: #F5F5F5;
   border-color: #E0E0E0;
 }

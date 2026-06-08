@@ -5,28 +5,18 @@ import '../../styles/home.css'
 
 import { AppointmentsService } from '../../services/appointments.service'
 import { historyService } from '../../lib/historyService'
+import {
+  APPOINTMENT_CATEGORY_LABELS,
+  HOME_AGENDA_CATEGORY_COLOR_CLASS,
+} from '../../lib/appointmentCategory'
 
 import type { Appointment, ClinicHistoryListItem } from '../../types'
-
-const CATEGORY_LABELS: Record<string, string> = {
-  VACCINATION: 'Vacinação',
-  OBSERVATION: 'Consulta',
-  EXAM: 'Exame',
-  SURGICAL: 'Cirurgia',
-}
 
 const CATEGORY_COLORS_APP: Record<string, string> = {
   VACCINATION: 'appointment-card--cyan',
   OBSERVATION: 'appointment-card--yellow',
   EXAM: 'appointment-card--purple',
   SURGICAL: 'appointment-card--pink',
-}
-
-const CATEGORY_COLORS_TL: Record<string, string> = {
-  VACCINATION: 'timeline-card--cyan',
-  OBSERVATION: 'timeline-card--yellow',
-  EXAM: 'timeline-card--pink',
-  SURGICAL: 'timeline-card--cyan',
 }
 
 function formatDateBR(isoString: string) {
@@ -119,7 +109,7 @@ export function HomePage() {
             {latestAppointments.map((app) => {
               const category = app.record?.appointment?.category || 'OBSERVATION'
               const colorClass = CATEGORY_COLORS_APP[category] || 'appointment-card--green'
-              const typeLabel = CATEGORY_LABELS[category] || 'Consulta'
+              const typeLabel = APPOINTMENT_CATEGORY_LABELS[category] || 'Consulta'
 
               return (
                 <div key={app.id} className={`appointment-card ${colorClass}`}>
@@ -188,8 +178,8 @@ export function HomePage() {
           <div className="timeline-list">
             {agenda.map((item) => {
               const category = item.category || 'OBSERVATION'
-              const colorClass = CATEGORY_COLORS_TL[category] || 'timeline-card--gray'
-              const typeLabel = CATEGORY_LABELS[category] || 'Consulta'
+              const colorClass = HOME_AGENDA_CATEGORY_COLOR_CLASS[category] || 'category-gray'
+              const typeLabel = APPOINTMENT_CATEGORY_LABELS[category] || 'Consulta'
 
               return (
                 <div key={item.id} className="timeline-item">

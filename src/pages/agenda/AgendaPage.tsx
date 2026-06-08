@@ -2,6 +2,10 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ClipboardPlus } from 'lucide-react'
 import { ScheduleModal } from '../../components/scheduling/ScheduleModal'
+import {
+  APPOINTMENT_CATEGORY_LABELS,
+  HOME_AGENDA_CATEGORY_COLOR_CLASS,
+} from '../../lib/appointmentCategory'
 import { useAgendaStore } from '../../stores/useAgendaStore'
 import type { Appointment } from '../../types'
 import '../../styles/agenda.css'
@@ -30,15 +34,6 @@ const HOURS_GRID = Array.from(
     return `${String(h).padStart(2, '0')}:${m}`
   },
 )
-
-const APPOINTMENT_PALETTE = ['cyan', 'rose', 'butter', 'mint', 'pearl', 'lavender'] as const
-
-const CATEGORY_COLOR_OFFSET: Record<string, number> = {
-  VACCINATION: 0,
-  OBSERVATION: 1,
-  EXAM: 5,
-  SURGICAL: 2,
-}
 
 interface LayoutSlot {
   appt: Appointment
@@ -94,13 +89,6 @@ function computeOverlapLayout(appointments: Appointment[], gridLength: number): 
   return result
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  VACCINATION: 'Vacinação',
-  OBSERVATION: 'Consulta',
-  EXAM: 'Exame',
-  SURGICAL: 'Cirurgia',
-}
-
 function getGridIndex(dateTime: string): number {
   const d = new Date(dateTime)
   return (d.getHours() - START_HOUR) * 2 + (d.getMinutes() >= 30 ? 1 : 0)
@@ -136,19 +124,8 @@ function formatDateBR(isoDate: string): string {
   return `${d}/${m}/${y}`
 }
 
-function hashColorSeed(value: string): number {
-  let hash = 0
-  for (let i = 0; i < value.length; i++) {
-    hash = (hash * 31 + value.charCodeAt(i)) >>> 0
-  }
-  return hash
-}
-
-function getAppointmentColor(appointment: Appointment): (typeof APPOINTMENT_PALETTE)[number] {
-  const seed = `${appointment.id}:${appointment.patientId}:${appointment.dateTime}`
-  const baseIndex = hashColorSeed(seed) % APPOINTMENT_PALETTE.length
-  const categoryOffset = CATEGORY_COLOR_OFFSET[appointment.category] ?? 0
-  return APPOINTMENT_PALETTE[(baseIndex + categoryOffset) % APPOINTMENT_PALETTE.length]
+function getAppointmentColorClass(appointment: Appointment): string {
+  return HOME_AGENDA_CATEGORY_COLOR_CLASS[appointment.category] ?? 'category-gray'
 }
 
 function shiftDate(isoDate: string, days: number): string {
@@ -176,21 +153,21 @@ function MobileCardList({
   }
 
   return (
-    <div className="agenda-mobile-list">
+      <div className="agenda-mobile-list">
       {sorted.map((appt) => {
-        const color = getAppointmentColor(appt)
+        const colorClass = getAppointmentColorClass(appt)
         return (
           <button
             key={appt.id}
             type="button"
-            className={`agenda-mobile-card card-${color}`}
+            className={`agenda-mobile-card ${colorClass}`}
             onClick={() => onSelect(appt)}
           >
             <div className="agenda-mobile-card-time">{formatTimeRange(appt.dateTime, appt.endDateTime)}</div>
             <div className="agenda-mobile-card-body">
               <span className="agenda-mobile-card-pet">{appt.patient?.name ?? 'Paciente'}</span>
               <span className="agenda-mobile-card-info">
-                {CATEGORY_LABELS[appt.category] ?? appt.category}
+                {APPOINTMENT_CATEGORY_LABELS[appt.category] ?? appt.category}
                 {appt.vet?.name ? ` · ${appt.vet.name}` : ''}
               </span>
             </div>
@@ -409,7 +386,7 @@ export function AgendaPage() {
             {computeOverlapLayout(appointments, HOURS_GRID.length).map(
               ({ appt, startIdx, col, totalCols }) => {
                 const span = getSlotSpan(appt.dateTime, appt.endDateTime)
-                const color = getAppointmentColor(appt)
+                const colorClass = getAppointmentColorClass(appt)
                 const cardHeight = rowH * span - 4
                 const gapPx = 3
                 const pctWidth = 100 / totalCols
@@ -419,7 +396,7 @@ export function AgendaPage() {
                 return (
                   <div
                     key={appt.id}
-                    className={`agenda-card card-${color}`}
+                    className={`agenda-card ${colorClass}`}
                     style={{
                       top: `${startIdx * rowH + 2}px`,
                       height: `${cardHeight}px`,
@@ -451,7 +428,7 @@ export function AgendaPage() {
                       <div className="detail-line">
                         <span className="detail-label">Atendimento:</span>
                         <span className="detail-value">
-                          {CATEGORY_LABELS[appt.category] ?? appt.category}
+                          {APPOINTMENT_CATEGORY_LABELS[appt.category] ?? appt.category}
                         </span>
                       </div>
                       <div className="detail-line">
@@ -507,7 +484,7 @@ export function AgendaPage() {
                 <ClipboardPlus className="agenda-confirm-icon" />
                 <h2>{selectedAppointment.patient?.name ?? 'Paciente'}</h2>
                 <p className="agenda-detail-sub">
-                  {CATEGORY_LABELS[selectedAppointment.category] ?? selectedAppointment.category}
+                  {APPOINTMENT_CATEGORY_LABELS[selectedAppointment.category] ?? selectedAppointment.category}
                   {' · '}
                   {formatTimeRange(selectedAppointment.dateTime, selectedAppointment.endDateTime)}
                 </p>
