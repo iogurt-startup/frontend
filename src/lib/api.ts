@@ -1,7 +1,11 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'https://iogurt.lablivre.rocks/api'
+// Por padrão usamos um caminho relativo (mesma origem que serviu o app),
+// de modo que as chamadas passem pelo reverse proxy do nginx/Vite e nunca
+// disparem CORS — funciona igual em dev local e em produção.
+// Defina VITE_API_URL apenas se precisar apontar para uma API de outra origem.
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api'
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
