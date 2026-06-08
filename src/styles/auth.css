@@ -282,10 +282,11 @@
 /* Cat face as the dot on the "i" — positioned over the first character */
 .auth-logo-cat {
   position: absolute;
-  top: -14px;
-  left: -2px;
-  width: 28px;
-  height: 28px;
+  top: -2px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  z-index: 1;
 }
 
 /* ── Form ─────────────────────────────────────────── */
