@@ -15,10 +15,17 @@ interface ScheduleModalProps {
 }
 
 const TIME_SLOTS = [
-  '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
-  '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
-  '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-  '16:00', '16:30', '17:00', '17:30',
+  '07:00', '07:15', '07:30', '07:45',
+  '08:00', '08:15', '08:30', '08:45',
+  '09:00', '09:15', '09:30', '09:45',
+  '10:00', '10:15', '10:30', '10:45',
+  '11:00', '11:15', '11:30', '11:45',
+  '12:00', '12:15', '12:30', '12:45',
+  '13:00', '13:15', '13:30', '13:45',
+  '14:00', '14:15', '14:30', '14:45',
+  '15:00', '15:15', '15:30', '15:45',
+  '16:00', '16:15', '16:30', '16:45',
+  '17:00', '17:15', '17:30', '17:45',
 ]
 
 const CATEGORY_OPTIONS: SelectOption[] = [
@@ -44,7 +51,7 @@ export function ScheduleModal({ isOpen, onClose, onSuccess }: ScheduleModalProps
   const [loadingTutors, setLoadingTutors] = useState(false)
   const [loadingPatients, setLoadingPatients] = useState(false)
 
-  const { createAppointment, selectedDate } = useAgendaStore()
+  const { createAppointment, selectedDate, appointments } = useAgendaStore()
   const user = useAuthStore((s) => s.user)
 
   useEffect(() => {
@@ -126,6 +133,14 @@ export function ScheduleModal({ isOpen, onClose, onSuccess }: ScheduleModalProps
   }
 
   if (!isOpen) return null
+
+  const occupiedStarts = new Set(
+    appointments.map((a) => {
+      const d = new Date(a.dateTime)
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+    }),
+  )
+  const availableStartSlots = TIME_SLOTS.filter((t) => !occupiedStarts.has(t))
 
   const tutorOptions: SelectOption[] = tutors.map((t) => ({
     label: t.fullName,
@@ -232,7 +247,7 @@ export function ScheduleModal({ isOpen, onClose, onSuccess }: ScheduleModalProps
                 setHorarioInicio(val)
                 if (horarioFim && horarioFim <= val) setHorarioFim('')
               }}
-              options={TIME_SLOTS}
+              options={availableStartSlots}
               placeholder="Selecionar início"
             />
           </div>
