@@ -540,7 +540,11 @@ export function PatientDetailsPage() {
                       <td>
                         <button
                           className="patient-records-action"
-                          onClick={() => navigate(`/historico/${item.id}/pacientes/${patient.id}`)}
+                          onClick={() =>
+                            navigate(`/historico/${item.id}/pacientes/${patient.id}`, {
+                              state: { from: `/pacientes/${patient.id}` },
+                            })
+                          }
                           type="button"
                         >
                           <FileText size={16} />
