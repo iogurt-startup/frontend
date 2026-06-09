@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import {
   AlertCircle,
   ArrowLeft,
@@ -176,12 +176,17 @@ function buildHistorySummary(patient: Patient, history: ClinicalHistoryItem[], v
 
 export function ClinicalCarePage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { appointmentId, patientId } = useParams<{
     appointmentId: string
     patientId: string
   }>()
 
-  const [activeTab, setActiveTab] = useState<CareTab>('atendimento')
+  const [activeTab, setActiveTab] = useState<CareTab>(() => {
+    const state = location.state as { tab?: CareTab }
+    console.log('CarePage initial state:', location.state)
+    return state?.tab || 'atendimento'
+  })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [printing, setPrinting] = useState(false)
@@ -683,7 +688,14 @@ export function ClinicalCarePage() {
                         <td>
                           <button
                             className="care-history-action"
-                            onClick={() => navigate(`/historico/${item.id}/pacientes/${patient.id}`)}
+                            onClick={() =>
+                              navigate(`/historico/${item.id}/pacientes/${patient.id}`, {
+                                state: { 
+                                  from: `/atendimentos/${appointmentId}/pacientes/${patientId}`,
+                                  tab: 'prontuario' 
+                                },
+                              })
+                            }
                             type="button"
                           >
                             <FileText size={16} />

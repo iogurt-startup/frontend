@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { ArrowLeft, FileText, LoaderCircle, Share2 } from 'lucide-react'
 import { parseRoutineGuidance } from '../../lib/clinicalRecordContent'
 import { getErrorMessage } from '../../lib/errorMessage'
@@ -71,6 +71,7 @@ function InfoBlock({ title, content }: { title: string; content?: string | null 
 
 export function HistoryDetailsPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { recordId, patientId } = useParams<{ recordId: string; patientId: string }>()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -78,6 +79,16 @@ export function HistoryDetailsPage() {
   const [record, setRecord] = useState<ClinicalHistoryItem | null>(null)
   const [prescriptionLoading, setPrescriptionLoading] = useState(false)
   const [prescriptionError, setPrescriptionError] = useState('')
+
+  const handleBack = () => {
+    const state = location.state as { from?: string; tab?: string }
+    console.log('HistoryDetails handleBack state:', state)
+    if (state?.from) {
+      navigate(state.from, { state: { tab: state.tab } })
+    } else {
+      navigate('/historico')
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -158,7 +169,7 @@ export function HistoryDetailsPage() {
   return (
     <div className="history-detail-page">
       <div className="history-detail-topbar">
-        <button className="care-back-button" type="button" onClick={() => navigate('/historico')}>
+        <button className="care-back-button" type="button" onClick={handleBack}>
           <ArrowLeft size={18} />
           Voltar
         </button>
