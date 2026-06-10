@@ -12,8 +12,8 @@ import '../../styles/agenda.css'
 
 const START_HOUR = 7
 const END_HOUR = 18
-const ROW_DESKTOP = 140
-const ROW_MOBILE = 80
+const ROW_DESKTOP = 70
+const ROW_MOBILE = 40
 
 const mq = window.matchMedia('(max-width: 768px)')
 
@@ -27,10 +27,10 @@ function useIsMobile() {
 }
 
 const HOURS_GRID = Array.from(
-  { length: (END_HOUR - START_HOUR) * 2 },
+  { length: (END_HOUR - START_HOUR) * 4 },
   (_, i) => {
-    const h = START_HOUR + Math.floor(i / 2)
-    const m = i % 2 === 0 ? '00' : '30'
+    const h = START_HOUR + Math.floor(i / 4)
+    const m = String((i % 4) * 15).padStart(2, '0')
     return `${String(h).padStart(2, '0')}:${m}`
   },
 )
@@ -91,14 +91,14 @@ function computeOverlapLayout(appointments: Appointment[], gridLength: number): 
 
 function getGridIndex(dateTime: string): number {
   const d = new Date(dateTime)
-  return (d.getHours() - START_HOUR) * 2 + (d.getMinutes() >= 30 ? 1 : 0)
+  return (d.getHours() - START_HOUR) * 4 + Math.floor(d.getMinutes() / 15)
 }
 
 function getSlotSpan(startDateTime: string, endDateTime?: string | null): number {
   if (!endDateTime) return 1
   const startMs = new Date(startDateTime).getTime()
   const endMs = new Date(endDateTime).getTime()
-  const slots = Math.round((endMs - startMs) / (30 * 60 * 1000))
+  const slots = Math.round((endMs - startMs) / (15 * 60 * 1000))
   return Math.max(slots, 1)
 }
 
@@ -179,10 +179,17 @@ function MobileCardList({
 }
 
 const TIME_SLOTS = [
-  '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
-  '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
-  '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-  '16:00', '16:30', '17:00', '17:30',
+  '07:00', '07:15', '07:30', '07:45',
+  '08:00', '08:15', '08:30', '08:45',
+  '09:00', '09:15', '09:30', '09:45',
+  '10:00', '10:15', '10:30', '10:45',
+  '11:00', '11:15', '11:30', '11:45',
+  '12:00', '12:15', '12:30', '12:45',
+  '13:00', '13:15', '13:30', '13:45',
+  '14:00', '14:15', '14:30', '14:45',
+  '15:00', '15:15', '15:30', '15:45',
+  '16:00', '16:15', '16:30', '16:45',
+  '17:00', '17:15', '17:30', '17:45',
 ]
 
 function getActionErrorMessage(err: unknown, fallback: string): string {
@@ -599,7 +606,17 @@ export function AgendaPage() {
                       }}
                     >
                       <option value="">Selecionar</option>
-                      {TIME_SLOTS.map((t) => (
+                      {TIME_SLOTS.filter((t) => {
+                        const occupied = new Set(
+                          appointments
+                            .filter((a) => a.id !== selectedAppointment.id)
+                            .map((a) => {
+                              const d = new Date(a.dateTime)
+                              return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+                            }),
+                        )
+                        return !occupied.has(t)
+                      }).map((t) => (
                         <option key={t} value={t}>{t}</option>
                       ))}
                     </select>

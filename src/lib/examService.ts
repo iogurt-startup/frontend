@@ -29,23 +29,23 @@ export const examService = {
   resolveExamFileUrl(fileUrl: string): string {
     if (!fileUrl) return ''
     if (/^https?:\/\//i.test(fileUrl)) return fileUrl
-
-    const baseUrl = api.defaults.baseURL || ''
-    const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
     const normalizedPath = fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`
-    return `${normalizedBase}${normalizedPath}`
+    const baseUrl = api.defaults.baseURL ?? ''
+    // External API (prod): build URL against the backend origin directly.
+    // Same-origin proxy (local/docker): route through /api so nginx forwards to the backend.
+    if (/^https?:\/\//i.test(baseUrl)) {
+      return baseUrl.replace(/\/+$/, '') + normalizedPath
+    }
+    return `/api${normalizedPath}`
   },
 
-  async downloadExamFile(fileUrl: string, fileName: string): Promise<void> {
+  downloadExamFile(fileUrl: string, fileName: string): void {
     const url = this.resolveExamFileUrl(fileUrl)
-    const response = await api.get(url, { responseType: 'blob' })
-    const blobUrl = URL.createObjectURL(response.data)
     const link = document.createElement('a')
-    link.href = blobUrl
+    link.href = url
     link.download = fileName
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
   },
 }

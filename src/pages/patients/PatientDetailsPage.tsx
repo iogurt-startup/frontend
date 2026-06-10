@@ -610,7 +610,7 @@ export function PatientDetailsPage() {
                       <td>{formatDate(item.uploadedAt)}</td>
                       <td>
                         <button
-                          onClick={() => void examService.downloadExamFile(item.fileUrl, item.fileName)}
+                          onClick={() => examService.downloadExamFile(item.fileUrl, item.fileName)}
                           className="patient-records-action"
                           style={{ display: 'inline-flex', padding: '6px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
                         >
