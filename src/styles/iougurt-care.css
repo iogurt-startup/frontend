@@ -1,0 +1,314 @@
+/* ═══════════════════════════════════════════════════
+   iougurt Care — Layout 2.0 (US15)
+   ═══════════════════════════════════════════════════ */
+
+.care-page {
+  width: 100%;
+  animation: careFadeIn 0.35s ease;
+  padding-bottom: 40px;
+}
+
+@keyframes careFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Top Bar ────────────────────────────────────── */
+.care-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.care-btn-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.care-btn-back:hover {
+  color: #444;
+}
+
+.care-pet-pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #ffe4ed;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: var(--pink-400);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.care-pet-pill button {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.care-pet-pill button:not(:disabled):hover {
+  color: var(--pink-400);
+}
+
+/* ── Title Area ─────────────────────────────────── */
+.care-title-area {
+  margin-bottom: 24px;
+}
+
+.care-title-area h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--pink-400);
+  margin-bottom: 6px;
+}
+
+.care-title-icon-box {
+  background: var(--pink-400);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.care-title-area p {
+  color: #777;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ── Summary Row ────────────────────────────────── */
+.care-summary-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.care-summary-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.care-summary-pill.total {
+  background: #f0f3ff;
+  color: #5c6bc0;
+}
+
+.care-summary-pill.attention {
+  background: #fff8e1;
+  color: #f6a92e;
+}
+
+.care-summary-pill.ok {
+  background: #e8f5e9;
+  color: #4caf50;
+}
+
+/* ── Tabs ───────────────────────────────────────── */
+.care-tabs {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.care-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #eee;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.care-tab:hover {
+  border-color: #ddd;
+}
+
+.care-tab.active {
+  background: var(--pink-400);
+  border-color: var(--pink-400);
+  color: #fff;
+}
+
+.care-tab .tab-count {
+  background: #f5f5f5;
+  color: #888;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+}
+
+.care-tab.active .tab-count {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+}
+
+/* ── Grid & Cards ───────────────────────────────── */
+.care-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.care-grid-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px dashed #ddd;
+}
+
+.care-card {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.care-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+}
+
+/* Status Left Borders */
+.care-card.status-ok { border-left: 4px solid #4caf50; }
+.care-card.status-warning { border-left: 4px solid #f6c852; }
+.care-card.status-danger { border-left: 4px solid #ef5350; }
+.care-card.status-info { border-left: 4px solid #4b89f3; }
+
+/* Header */
+.care-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.care-card-header-left {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.care-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Icon colors based on type */
+.care-card.type-appointment .care-card-icon {
+  background: #f3e5f5;
+  color: #ab47bc;
+}
+.care-card.type-vaccine .care-card-icon {
+  background: #e3f2fd;
+  color: #1e88e5;
+}
+.care-card.type-recommendation .care-card-icon {
+  background: #ffebee;
+  color: #ef5350;
+}
+
+.care-card-titles h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 2px 0;
+}
+
+.care-card-titles span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #999;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.care-card-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+
+/* We reuse status colors for the tag bg */
+.status-ok .care-card-tag { background: #e8f5e9; color: #2e7d32; }
+.status-warning .care-card-tag { background: #fff8e1; color: #f57f17; }
+.status-danger .care-card-tag { background: #ffebee; color: #c62828; }
+.status-info .care-card-tag { background: #e3f2fd; color: #1565c0; }
+
+/* Body */
+.care-card-body {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.care-card-body p {
+  margin: 0;
+}
+
+/* Footer */
+.care-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 500;
+}
