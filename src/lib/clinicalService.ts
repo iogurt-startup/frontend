@@ -88,8 +88,10 @@ export const clinicalService = {
     return response.data
   },
 
-  async finalizeClinicalRecord(recordId: string): Promise<ClinicalRecord> {
-    const response = await api.patch<ClinicalRecord>(`/clinical-records/${recordId}/finalize`)
+  async finalizeClinicalRecord(recordId: string, endDateTime?: string): Promise<ClinicalRecord> {
+    const response = await api.patch<ClinicalRecord>(`/clinical-records/${recordId}/finalize`, {
+      ...(endDateTime ? { endDateTime } : {}),
+    })
     return response.data
   },
 

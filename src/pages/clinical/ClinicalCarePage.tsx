@@ -321,7 +321,10 @@ export function ClinicalCarePage() {
         setSavedForm(nextForm)
       }
 
-      const finalizedRecord = await clinicalService.finalizeClinicalRecord(record.id)
+      const finalizedRecord = await clinicalService.finalizeClinicalRecord(
+        record.id,
+        new Date().toISOString(),
+      )
       setRecord(finalizedRecord)
       await refreshHistoryData()
       setToast({ type: 'success', message: 'Atendimento finalizado com sucesso.' })
