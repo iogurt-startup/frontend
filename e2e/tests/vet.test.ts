@@ -49,8 +49,7 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
     await driver.get(`${ENV.BASE_URL}/login`);
     try {
       await driver.executeScript('window.localStorage.clear();');
-    } catch {
-    }
+    } catch { /* ignore */ }
 
     const randId = Math.floor(Math.random() * 9000) + 1000;
     petName = `AAA Amora E2E ${randId}`;
@@ -62,8 +61,7 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
   beforeEach(async function () {
     try {
       await driver.executeScript('window.onbeforeunload = null; window.__hasBeforeUnload = false;');
-    } catch {
-    }
+    } catch { /* ignore */ }
 
     try {
       const overlays = await driver.findElements(By.css('.modal-overlay, .agenda-confirm-overlay, .care-modal-overlay, .patient-edit-modal-overlay'));
@@ -74,8 +72,7 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
           break;
         }
       }
-    } catch {
-    }
+    } catch { /* ignore */ }
   });
 
   it('Passo 1: Deve realizar login com e-mail e senha válidos do owner', async function () {
@@ -172,7 +169,7 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
 
     const apptCardXPath = `//div[contains(@class, "agenda-card") and .//span[contains(@class, "pet-name") and contains(text(), "${petName}")]]`;
     const apptCard = await driver.wait(until.elementLocated(By.xpath(apptCardXPath)), 10000);
-    expect(await apptCard.isDisplayed()).to.be.true;
+    void expect(await apptCard.isDisplayed()).to.be.true;
   });
 
   it('Passo 4: Deve cancelar o agendamento recém-criado com justificativa', async function () {
@@ -464,6 +461,6 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
     `, historySelect);
     
     const subtitle = await driver.wait(until.elementLocated(By.xpath('//p[contains(., "30 dias")]')), 8000);
-    expect(await subtitle.isDisplayed()).to.be.true;
+    void expect(await subtitle.isDisplayed()).to.be.true;
   });
 });

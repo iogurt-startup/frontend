@@ -8,7 +8,6 @@ describe('Tutor Flow E2E - Continuous Journey', function () {
   let driver: WebDriver;
   let tutorEmail: string;
   let tutorPassword: string;
-  let tutorFullName: string;
   let dogName: string;
   let catName: string;
 
@@ -18,20 +17,17 @@ describe('Tutor Flow E2E - Continuous Journey', function () {
     await driver.get(`${ENV.BASE_URL}/login`);
     try {
       await driver.executeScript('window.localStorage.clear();');
-    } catch {
-    }
+    } catch { /* ignore */ }
 
     const sharedData = getSharedData();
     if (sharedData.dynamicTutorCredentials) {
       tutorEmail = sharedData.dynamicTutorCredentials.email;
       tutorPassword = sharedData.dynamicTutorCredentials.temporaryPassword;
-      tutorFullName = sharedData.dynamicTutorCredentials.tutorName;
       dogName = sharedData.dynamicTutorCredentials.petName;
       catName = '';
     } else {
       tutorEmail = sharedData.tutorCredentials.email;
       tutorPassword = sharedData.tutorCredentials.temporaryPassword;
-      tutorFullName = sharedData.tutor.fullName;
       dogName = sharedData.patientDog.name;
       catName = sharedData.patientCat.name;
     }
@@ -40,8 +36,7 @@ describe('Tutor Flow E2E - Continuous Journey', function () {
   beforeEach(async function () {
     try {
       await driver.executeScript('window.onbeforeunload = null; window.__hasBeforeUnload = false;');
-    } catch {
-    }
+    } catch { /* ignore */ }
   });
 
   it('Passo 1: Deve realizar login com as credenciais do tutor', async function () {
@@ -89,7 +84,7 @@ describe('Tutor Flow E2E - Continuous Journey', function () {
 
   it('Passo 3: Deve visualizar o painel de alertas do Iougurt Care', async function () {
     const careSection = await driver.wait(until.elementLocated(By.css('.tutor-care-card')), 8000);
-    expect(await careSection.isDisplayed()).to.be.true;
+    void expect(await careSection.isDisplayed()).to.be.true;
 
     const listItems = await driver.findElements(By.css('.tutor-care-card ul li'));
     expect(listItems.length).to.be.greaterThan(0);
@@ -124,7 +119,7 @@ describe('Tutor Flow E2E - Continuous Journey', function () {
     await driver.wait(until.urlContains('/portal/historico/'), 8000);
 
     const detailsContent = await driver.wait(until.elementLocated(By.css('.history-detail-content')), 10000);
-    expect(await detailsContent.isDisplayed()).to.be.true;
+    void expect(await detailsContent.isDisplayed()).to.be.true;
 
     const backBtn = await driver.findElement(By.css('.care-back-button'));
     await backBtn.click();

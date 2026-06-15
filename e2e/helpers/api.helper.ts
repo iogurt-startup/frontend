@@ -132,7 +132,7 @@ export async function registerVet(
 export async function loginUser(
   email: string,
   password: string
-): Promise<{ user: any; accessToken: string; refreshToken: string }> {
+): Promise<{ user: Record<string, unknown>; accessToken: string; refreshToken: string }> {
   const client = createApiClient();
   const res = await client.post('/auth/login', { email, password });
   return res.data;
@@ -147,8 +147,7 @@ export async function refreshUserToken(user: TestUser): Promise<void> {
     });
     user.accessToken = res.data.accessToken;
     user.refreshToken = res.data.refreshToken;
-  } catch {
-  }
+  } catch { /* ignore */ }
 }
 
 export async function changeUserRole(

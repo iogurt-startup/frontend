@@ -96,7 +96,7 @@ export class BasePage {
     }
   }
 
-  async executeScript(script: string, ...args: any[]): Promise<any> {
+  async executeScript(script: string, ...args: unknown[]): Promise<unknown> {
     return this.driver.executeScript(script, ...args);
   }
 }

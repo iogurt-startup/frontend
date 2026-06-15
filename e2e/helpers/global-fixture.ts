@@ -94,8 +94,7 @@ export async function quitGlobalDriver(): Promise<void> {
   if (globalDriver) {
     try {
       await globalDriver.quit();
-    } catch {
-    }
+    } catch { /* ignore */ }
     globalDriver = null;
   }
 }
