@@ -1,0 +1,10 @@
+spec:
+  - e2e/tests/vet.test.ts
+  - e2e/tests/tutor.test.ts
+timeout: 120000
+exit: true
+recursive: true
+require:
+  - e2e/helpers/global-fixture.ts
+node-option:
+  - import=tsx
