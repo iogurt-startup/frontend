@@ -9,7 +9,6 @@ export class PatientsListPage extends BasePage {
   private tableRows = By.css('.patients-table tbody tr');
   private paginationBtns = By.css('.pagination-btn');
   private filterSpecies = By.id('patients-filter-species');
-  private filterDate = By.css('.patients-filter-input');
   private emptyState = By.css('.patients-empty');
   private loading = By.css('.patients-loading');
   private pageInfo = By.css('.page-footer-info');

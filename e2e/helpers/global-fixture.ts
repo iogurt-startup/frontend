@@ -115,7 +115,6 @@ export async function quitGlobalDriver(): Promise<void> {
 
 export const mochaHooks = {
   async beforeAll() {
-    // 1. Tentar limpar clínica global anterior se houver resquícios
     try {
       const loginRes = await loginUser(TEST_DATA.GLOBAL_OWNER_EMAIL, TEST_PASSWORD);
       const ownerUser = {
@@ -131,7 +130,6 @@ export const mochaHooks = {
       await cleanupTestClinic(ownerUser);
     } catch { /* ignore */ }
 
-    // 2. Tentar limpar clínica veterinária do teste anterior se houver resquícios
     try {
       const loginRes = await loginUser(TEST_DATA.OWNER_EMAIL, TEST_PASSWORD);
       const ownerUser = {
@@ -150,14 +148,13 @@ export const mochaHooks = {
     await setupGlobalFixture();
   },
   async afterAll() {
-    // 1. Clean up global fixture clinic
+
     if (sharedData) {
       try {
         await cleanupTestClinic(sharedData.owner);
       } catch { /* ignore */ }
     }
 
-    // 2. Clean up UI veterinarian test clinic
     try {
       const loginRes = await loginUser(TEST_DATA.OWNER_EMAIL, TEST_PASSWORD);
       const ownerUser = {
