@@ -5,14 +5,16 @@ import {
   createPatient,
   createTutorAccount,
   createAppointment,
+  cleanupTestClinic,
   createTestContext,
+  loginUser,
   TestUser,
   TestTutor,
   TestPatient,
   TestAppointment,
   TestContext,
 } from './api.helper';
-import { uniqueEmail } from '../config/test.config';
+import { TEST_DATA, TEST_PASSWORD } from '../config/test.config';
 
 export interface SharedData {
   ctx: TestContext;
@@ -41,20 +43,32 @@ export async function setupGlobalFixture(): Promise<void> {
 
   const ctx = createTestContext();
 
-  const owner = await registerOwner(ctx, 'global');
+  const owner = await registerOwner(ctx, {
+    name: TEST_DATA.GLOBAL_OWNER_NAME,
+    email: TEST_DATA.GLOBAL_OWNER_EMAIL,
+    clinicName: TEST_DATA.GLOBAL_CLINIC_NAME,
+  });
 
-  const vet = await registerVet(ctx, owner, 'global.vet');
+  const vet = await registerVet(ctx, owner, {
+    name: 'Dra. Camila Global',
+    email: 'camila.global@iougurt.com',
+  });
 
-  const tutor = await createTutor(ctx, owner, 'global');
+  const tutor = await createTutor(ctx, owner, {
+    fullName: 'Ricardo Global',
+    cpf: '48291047243',
+    phone: '61999887755',
+    email: 'ricardo.global@iougurt.com',
+  });
 
-  const patientDog = await createPatient(ctx, owner, tutor.id, 'global.dog', 'Cachorro');
-  const patientCat = await createPatient(ctx, owner, tutor.id, 'global.cat', 'Gato');
+  const patientDog = await createPatient(ctx, owner, tutor.id, 'Amora Global', 'Cachorro');
+  const patientCat = await createPatient(ctx, owner, tutor.id, 'Mingau Global', 'Gato');
 
   const tutorCredentials = await createTutorAccount(
     ctx,
     owner,
     tutor.id,
-    uniqueEmail('global.tutor.account')
+    'ricardo.global.portal@iougurt.com'
   );
 
   const appointment = await createAppointment(
@@ -101,9 +115,64 @@ export async function quitGlobalDriver(): Promise<void> {
 
 export const mochaHooks = {
   async beforeAll() {
+    // 1. Tentar limpar clínica global anterior se houver resquícios
+    try {
+      const loginRes = await loginUser(TEST_DATA.GLOBAL_OWNER_EMAIL, TEST_PASSWORD);
+      const ownerUser = {
+        id: loginRes.user.id as string,
+        email: TEST_DATA.GLOBAL_OWNER_EMAIL,
+        password: TEST_PASSWORD,
+        name: TEST_DATA.GLOBAL_OWNER_NAME,
+        role: loginRes.user.role as string,
+        accessToken: loginRes.accessToken,
+        refreshToken: loginRes.refreshToken,
+        clinicId: loginRes.user.clinicId as string,
+      };
+      await cleanupTestClinic(ownerUser);
+    } catch { /* ignore */ }
+
+    // 2. Tentar limpar clínica veterinária do teste anterior se houver resquícios
+    try {
+      const loginRes = await loginUser(TEST_DATA.OWNER_EMAIL, TEST_PASSWORD);
+      const ownerUser = {
+        id: loginRes.user.id as string,
+        email: TEST_DATA.OWNER_EMAIL,
+        password: TEST_PASSWORD,
+        name: TEST_DATA.OWNER_NAME,
+        role: loginRes.user.role as string,
+        accessToken: loginRes.accessToken,
+        refreshToken: loginRes.refreshToken,
+        clinicId: loginRes.user.clinicId as string,
+      };
+      await cleanupTestClinic(ownerUser);
+    } catch { /* ignore */ }
+
     await setupGlobalFixture();
   },
   async afterAll() {
+    // 1. Clean up global fixture clinic
+    if (sharedData) {
+      try {
+        await cleanupTestClinic(sharedData.owner);
+      } catch { /* ignore */ }
+    }
+
+    // 2. Clean up UI veterinarian test clinic
+    try {
+      const loginRes = await loginUser(TEST_DATA.OWNER_EMAIL, TEST_PASSWORD);
+      const ownerUser = {
+        id: loginRes.user.id as string,
+        email: TEST_DATA.OWNER_EMAIL,
+        password: TEST_PASSWORD,
+        name: TEST_DATA.OWNER_NAME,
+        role: loginRes.user.role as string,
+        accessToken: loginRes.accessToken,
+        refreshToken: loginRes.refreshToken,
+        clinicId: loginRes.user.clinicId as string,
+      };
+      await cleanupTestClinic(ownerUser);
+    } catch { /* ignore */ }
+
     await quitGlobalDriver();
   },
 };

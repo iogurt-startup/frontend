@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { ENV, uniqueEmail, uniqueName, TEST_PASSWORD } from '../config/test.config';
+import { ENV, TEST_DATA, TEST_PASSWORD } from '../config/test.config';
 
 export interface TestUser {
   id: string;
@@ -9,6 +9,7 @@ export interface TestUser {
   role: string;
   accessToken: string;
   refreshToken: string;
+  clinicId?: string;
 }
 
 export interface TestTutor {
@@ -61,33 +62,36 @@ export function createTestContext(): TestContext {
 
 export async function registerOwner(
   ctx: TestContext,
-  suffix: string
+  data: { name: string; email: string; password?: string; clinicName: string } = {
+    name: TEST_DATA.OWNER_NAME,
+    email: TEST_DATA.OWNER_EMAIL,
+    clinicName: TEST_DATA.CLINIC_NAME,
+  }
 ): Promise<TestUser> {
   const client = createApiClient();
-  const email = uniqueEmail(`owner.${suffix}`);
-  const name = uniqueName(`owner.${suffix}`);
-  const clinicName = `Centro Veterinário Iougurt ${suffix} ${Date.now()}`;
+  const password = data.password || TEST_PASSWORD;
 
   await client.post('/auth/register', {
-    name,
-    email,
-    password: TEST_PASSWORD,
-    clinicName,
+    name: data.name,
+    email: data.email,
+    password,
+    clinicName: data.clinicName,
   });
 
   const loginRes = await client.post('/auth/login', {
-    email,
-    password: TEST_PASSWORD,
+    email: data.email,
+    password,
   });
 
   const user: TestUser = {
     id: loginRes.data.user.id,
-    email,
-    password: TEST_PASSWORD,
-    name,
+    email: data.email,
+    password,
+    name: data.name,
     role: loginRes.data.user.role,
     accessToken: loginRes.data.accessToken,
     refreshToken: loginRes.data.refreshToken,
+    clinicId: loginRes.data.user.clinicId,
   };
 
   ctx.users.push(user);
@@ -97,29 +101,34 @@ export async function registerOwner(
 export async function registerVet(
   ctx: TestContext,
   ownerUser: TestUser,
-  suffix: string
+  data: { name: string; email: string; password?: string } = {
+    name: TEST_DATA.VET_NAME,
+    email: TEST_DATA.VET_EMAIL,
+  }
 ): Promise<TestUser> {
   const client = createApiClient();
-  const email = uniqueEmail(`vet.${suffix}`);
-  const name = uniqueName(`Vet ${suffix}`);
-  const password = TEST_PASSWORD;
+  const password = data.password || TEST_PASSWORD;
 
   await client.post(
     '/auth/register/vet',
-    { name, email, password },
+    {
+      name: data.name,
+      email: data.email,
+      password,
+    },
     { headers: authHeaders(ownerUser.accessToken) }
   );
 
   const loginRes = await client.post('/auth/login', {
-    email,
+    email: data.email,
     password,
   });
 
   const user: TestUser = {
     id: loginRes.data.user.id,
-    email,
+    email: data.email,
     password,
-    name,
+    name: data.name,
     role: loginRes.data.user.role,
     accessToken: loginRes.data.accessToken,
     refreshToken: loginRes.data.refreshToken,
@@ -160,26 +169,33 @@ export async function changeUserRole(
 export async function createTutor(
   ctx: TestContext,
   user: TestUser,
-  suffix: string
+  data: { fullName: string; cpf: string; phone: string; email: string } = {
+    fullName: TEST_DATA.TUTOR_NAME,
+    cpf: TEST_DATA.TUTOR_CPF,
+    phone: TEST_DATA.TUTOR_PHONE,
+    email: TEST_DATA.TUTOR_EMAIL,
+  }
 ): Promise<TestTutor> {
   const client = createApiClient();
-  const cpf = generateRandomCpf();
-  const fullName = uniqueName(`Tutor ${suffix}`);
-  const email = uniqueEmail(`tutor.${suffix}`);
 
   const res = await client.post(
     '/tutors',
-    { fullName, cpf, phone: '11999990000', email },
+    {
+      fullName: data.fullName,
+      cpf: data.cpf,
+      phone: data.phone,
+      email: data.email,
+    },
     { headers: authHeaders(user.accessToken) }
   );
 
-  const data = res.data.tutor || res.data;
+  const tutorData = res.data.tutor || res.data;
 
   const tutor: TestTutor = {
-    id: data.id,
-    fullName,
-    cpf,
-    email,
+    id: tutorData.id,
+    fullName: data.fullName,
+    cpf: data.cpf,
+    email: data.email,
   };
 
   ctx.tutors.push(tutor);
@@ -190,7 +206,7 @@ export async function createTutorAccount(
   ctx: TestContext,
   user: TestUser,
   tutorId: string,
-  email: string
+  email: string = TEST_DATA.TUTOR_ACCOUNT_EMAIL
 ): Promise<{ userId: string; email: string; temporaryPassword: string }> {
   const client = createApiClient();
   const res = await client.post(
@@ -226,11 +242,10 @@ export async function createPatient(
   ctx: TestContext,
   user: TestUser,
   tutorId: string,
-  suffix: string,
+  name: string = TEST_DATA.PET_DOG_NAME,
   species: string = 'Cachorro'
 ): Promise<TestPatient> {
   const client = createApiClient();
-  const name = uniqueName(`pet.${suffix}`);
 
   const res = await client.post(
     '/patients',
@@ -287,23 +302,11 @@ export async function createAppointment(
   return appt;
 }
 
-
-
-export function generateRandomCpf(): string {
-  const rand = (max: number) => Math.floor(Math.random() * max);
-  const n = Array.from({ length: 9 }, () => rand(9));
-
-  let d1 = 0;
-  for (let i = 0; i < 9; i++) d1 += n[i] * (10 - i);
-  d1 = 11 - (d1 % 11);
-  if (d1 >= 10) d1 = 0;
-  n.push(d1);
-
-  let d2 = 0;
-  for (let i = 0; i < 10; i++) d2 += n[i] * (11 - i);
-  d2 = 11 - (d2 % 11);
-  if (d2 >= 10) d2 = 0;
-  n.push(d2);
-
-  return n.join('');
+export async function cleanupTestClinic(owner: TestUser): Promise<void> {
+  if (!owner.clinicId) return;
+  const client = createApiClient();
+  await client.delete(
+    `/test/clinics/${owner.clinicId}`,
+    { headers: authHeaders(owner.accessToken) }
+  );
 }

@@ -1,13 +1,15 @@
 import { By, until, WebDriver } from 'selenium-webdriver';
 import { expect } from 'chai';
 import { getGlobalDriver, getSharedData } from '../helpers/global-fixture';
-import { ENV } from '../config/test.config';
-import { generateRandomCpf } from '../helpers/api.helper';
+import { ENV, TEST_DATA } from '../config/test.config';
 import { LoginPage } from '../pages/login.page';
+import { RegisterPage } from '../pages/register.page';
 import { PatientsListPage } from '../pages/patients-list.page';
 import { PatientRegisterPage } from '../pages/patient-register.page';
 import { PatientDetailsPage } from '../pages/patient-details.page';
 import { SidebarPage } from '../pages/sidebar.page';
+import * as fs from 'fs';
+import * as path from 'path';
 
 async function selectCustomOption(driver: WebDriver, labelText: string, optionText: string) {
   const labelXPath = `//div[contains(@class, "form-group") and ./label[contains(text(), "${labelText}")]]//div[contains(@class, "custom-select-button")]`;
@@ -42,6 +44,7 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
   let tutorName: string;
   let tutorCpf: string;
   let tutorPhone: string;
+  let dummyPdfPath: string;
 
   before(async function () {
     driver = await getGlobalDriver();
@@ -51,11 +54,21 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
       await driver.executeScript('window.localStorage.clear();');
     } catch { /* ignore */ }
 
-    const randId = Math.floor(Math.random() * 9000) + 1000;
-    petName = `AAA Amora E2E ${randId}`;
-    tutorName = `AAA Ricardo Oliveira E2E ${randId}`;
-    tutorCpf = generateRandomCpf();
-    tutorPhone = '11999998888';
+    petName = TEST_DATA.PET_DOG_NAME;
+    tutorName = TEST_DATA.TUTOR_NAME;
+    tutorCpf = TEST_DATA.TUTOR_CPF;
+    tutorPhone = TEST_DATA.TUTOR_PHONE;
+
+    dummyPdfPath = path.resolve('test.pdf');
+    fs.writeFileSync(dummyPdfPath, 'dummy PDF content');
+  });
+
+  after(async function () {
+    if (dummyPdfPath && fs.existsSync(dummyPdfPath)) {
+      try {
+        fs.unlinkSync(dummyPdfPath);
+      } catch { /* ignore */ }
+    }
   });
 
   beforeEach(async function () {
@@ -75,11 +88,49 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
     } catch { /* ignore */ }
   });
 
-  it('Passo 1: Deve realizar login com e-mail e senha válidos do owner', async function () {
-    const sharedData = getSharedData();
+  it('Passo 1: Deve realizar o cadastro e login com as credenciais do owner', async function () {
     const loginPage = new LoginPage(driver);
     await loginPage.open();
-    await loginPage.login(sharedData.owner.email, sharedData.owner.password);
+
+    const passwordInput = await driver.wait(until.elementLocated(By.id('login-password')), 8000);
+    expect(await passwordInput.getAttribute('type')).to.equal('password');
+    await passwordInput.sendKeys('Test@123456');
+    
+    await loginPage.togglePasswordVisibility();
+    expect(await passwordInput.getAttribute('type')).to.equal('text');
+    
+    await loginPage.togglePasswordVisibility();
+    expect(await passwordInput.getAttribute('type')).to.equal('password');
+
+    await loginPage.clickForgotPassword();
+    await driver.wait(until.urlContains('/forgot-password'), 8000);
+
+    const forgotEmailInput = await driver.wait(until.elementLocated(By.id('forgot-email')), 8000);
+    await forgotEmailInput.sendKeys(TEST_DATA.OWNER_EMAIL);
+
+    const submitBtn = await driver.wait(until.elementLocated(By.css('button.auth-submit')), 8000);
+    expect(await submitBtn.isDisplayed()).to.equal(true);
+
+    const backToLoginLink = await driver.wait(until.elementLocated(By.css('a.forgot-back-link')), 8000);
+    expect(await backToLoginLink.isDisplayed()).to.equal(true);
+    
+    await loginPage.open();
+    await driver.wait(until.urlContains('/login'), 8000);
+
+    const registerLink = await driver.wait(until.elementLocated(By.css('a[href="/register"]')), 8000);
+    await registerLink.click();
+    await driver.wait(until.urlContains('/register'), 8000);
+
+    const registerPage = new RegisterPage(driver);
+    await registerPage.register(
+      TEST_DATA.OWNER_NAME,
+      TEST_DATA.CLINIC_NAME,
+      TEST_DATA.OWNER_EMAIL,
+      TEST_DATA.OWNER_PASSWORD
+    );
+
+    await loginPage.waitForUrlContains('/login');
+    await loginPage.login(TEST_DATA.OWNER_EMAIL, TEST_DATA.OWNER_PASSWORD);
     
     await loginPage.waitForUrlContains('/home');
     const currentUrl = await driver.getCurrentUrl();
@@ -218,26 +269,49 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
     await rescheduleBtn.click();
 
     const startSelect = await driver.wait(until.elementLocated(By.xpath('//div[label[contains(text(), "Novo Horário")]]/select')), 8000);
-    await startSelect.click();
-    const optionStart = await driver.wait(until.elementLocated(By.xpath('//div[label[contains(text(), "Novo Horário")]]/select/option[@value="17:00"]')), 8000);
-    await optionStart.click();
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const rescheduleDate = tomorrow.toISOString().split('T')[0];
+    const dateInput = await driver.wait(until.elementLocated(By.xpath('//div[label[contains(text(), "Nova Data")]]/input[@type="date"]')), 8000);
+    await driver.executeScript(`
+      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+      nativeSetter.call(arguments[0], arguments[1]);
+      arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+      arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+    `, dateInput, rescheduleDate);
+
+    await driver.executeScript(`
+      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+      nativeSetter.call(arguments[0], '17:00');
+      arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+    `, startSelect);
 
     const endSelect = await driver.wait(until.elementLocated(By.xpath('//div[label[contains(text(), "Novo Fim")]]/select')), 8000);
-    await endSelect.click();
-    const optionEnd = await driver.wait(until.elementLocated(By.xpath('//div[label[contains(text(), "Novo Fim")]]/select/option[@value="17:30"]')), 8000);
-    await optionEnd.click();
+    await driver.executeScript(`
+      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+      nativeSetter.call(arguments[0], '17:30');
+      arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+    `, endSelect);
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const confirmRescheduleBtn = await driver.wait(until.elementLocated(By.xpath('//button[contains(text(), "Confirmar Reagendamento")]')), 8000);
     await confirmRescheduleBtn.click();
 
-    const timeSpanXPath = `${apptCardXPath}//span[contains(@class, "agenda-card-time")]`;
-    const timeSpan = await driver.wait(until.elementLocated(By.xpath(timeSpanXPath)), 10000);
-    await driver.wait(async () => {
-      const text = await timeSpan.getText();
-      return text.includes('17:00');
-    }, 10000);
-    
-    const finalTimeText = await timeSpan.getText();
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    await driver.navigate().refresh();
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const nextDayArrows = await driver.findElements(By.css('.agenda-date-arrow'));
+    await nextDayArrows[1].click();
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const updatedCardXPath = `//div[contains(@class, "agenda-card") and .//span[contains(@class, "pet-name") and contains(text(), "${petName}")]]`;
+    const updatedCard = await driver.wait(until.elementLocated(By.xpath(updatedCardXPath)), 12000);
+    const updatedTimeSpan = await updatedCard.findElement(By.css('.agenda-card-time'));
+    const finalTimeText = await updatedTimeSpan.getText();
     expect(finalTimeText).to.include('17:00');
   });
 
@@ -270,13 +344,52 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
     const currentUrl = await driver.getCurrentUrl();
     expect(currentUrl).to.include('/atendimentos/');
 
+    // Preencher campos do prontuário (US09)
+    const clinicalNotes = await driver.wait(until.elementLocated(By.id('clinical-notes')), 8000);
+    await clinicalNotes.sendKeys('Animal com tosse e espirros frequentes.');
+
+    const physicalExam = await driver.findElement(By.id('physical-exam'));
+    await physicalExam.sendKeys('Temperatura 38.5C, pulmões limpos, mucosa corada.');
+
+    const observations = await driver.findElement(By.id('care-observations'));
+    await observations.sendKeys('Suspeita de traqueobronquite infecciosa canina.');
+
+    const examRequests = await driver.findElement(By.id('care-exam-requests'));
+    await examRequests.sendKeys('Hemograma completo, PCR para vírus respiratórios.');
+
+    const diagnosis = await driver.findElement(By.id('care-diagnosis'));
+    await diagnosis.sendKeys('Gripe canina.');
+
+    const prescriptions = await driver.findElement(By.id('care-prescriptions'));
+    await prescriptions.sendKeys('Antibiótico doxiciclina 100mg a cada 12h por 7 dias.');
+
+    const additionalObs = await driver.findElement(By.id('care-additional-observations'));
+    await additionalObs.sendKeys('Manter animal isolado de outros cães.');
+
+    const saveBtn = await driver.findElement(By.xpath('//button[contains(@class, "care-top-action") and contains(., "Salvar alterações")]'));
+    await saveBtn.click();
+
+    const successToast = await driver.wait(until.elementLocated(By.css('.care-toast.success')), 8000);
+    expect(await successToast.getText()).to.include('salvo com sucesso');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     const finalizeBtn = await driver.wait(until.elementLocated(By.xpath('//button[contains(@class, "care-top-action") and contains(text(), "Finalizar atendimento")]')), 12000);
     await finalizeBtn.click();
 
     const confirmFinalizeBtn = await driver.wait(until.elementLocated(By.xpath('//div[contains(@class, "care-modal-actions")]/button[contains(@class, "primary") and contains(text(), "Finalizar")]')), 8000);
     await confirmFinalizeBtn.click();
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const receiptBtn = await driver.wait(until.elementLocated(By.xpath('//button[contains(@class, "care-top-action") and contains(., "Gerar Receita")]')), 8000);
+    await driver.wait(async () => {
+      return await receiptBtn.isEnabled();
+    }, 8000);
+    await receiptBtn.click();
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const errorToasts = await driver.findElements(By.css('.care-toast.error'));
+    expect(errorToasts.length).to.equal(0);
   });
 
   it('Passo 7: Deve filtrar pacientes, acessar a ficha do paciente e navegar nas abas', async function () {
@@ -315,6 +428,24 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
     activeTab = await patientDetails.getActiveTabText();
     expect(activeTab).to.include('Exames');
 
+    const attachBtn = await driver.wait(until.elementLocated(By.xpath('//button[contains(., "Anexar Exame")]')), 8000);
+    await attachBtn.click();
+
+    const fileInput = await driver.wait(until.elementLocated(By.css('input[type="file"]')), 8000);
+    await fileInput.sendKeys(dummyPdfPath);
+
+    const modalAttachConfirm = await driver.wait(until.elementLocated(By.css('.patient-edit-modal-actions button.confirm.save')), 8000);
+    await modalAttachConfirm.click();
+
+    const examRowXPath = `//tr[td[contains(., "test.pdf")]]`;
+    const examRow = await driver.wait(until.elementLocated(By.xpath(examRowXPath)), 10000);
+    expect(await examRow.isDisplayed()).to.equal(true);
+
+    const downloadBtn = await examRow.findElement(By.css('.patient-records-action'));
+    await downloadBtn.click();
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     await patientDetails.switchTab('Dados');
     activeTab = await patientDetails.getActiveTabText();
     expect(activeTab).to.include('Dados');
@@ -323,8 +454,7 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
     await accessBtn.click();
 
     const emailModalInput = await driver.wait(until.elementLocated(By.id('tutor-access-email')), 8000);
-    const randId = Math.floor(Math.random() * 9000) + 1000;
-    const tutorEmail = `tutor.${randId}@test.com`;
+    const tutorEmail = TEST_DATA.TUTOR_ACCOUNT_EMAIL;
     await emailModalInput.sendKeys(tutorEmail);
 
     const generateBtn = await driver.findElement(By.css('.patient-edit-modal .confirm.save'));
@@ -355,6 +485,16 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
     const weightInput = await driver.wait(until.elementLocated(By.id('weight')), 8000);
     await weightInput.clear();
     await weightInput.sendKeys('15');
+
+    // Testar US05 - Alerta ao tentar sair com alterações não salvas (Exit Modal)
+    const backBtn = await driver.findElement(By.css('.register-back-btn'));
+    await backBtn.click();
+
+    const exitModalOverlay = await driver.wait(until.elementLocated(By.css('.patient-edit-modal-overlay')), 8000);
+    const cancelExitBtn = await exitModalOverlay.findElement(By.css('.patient-edit-modal-actions button.ghost'));
+    await cancelExitBtn.click();
+
+    await driver.wait(until.stalenessOf(exitModalOverlay), 8000);
 
     const emailInput = await driver.findElement(By.id('tutor-email'));
     await emailInput.clear();
@@ -462,5 +602,30 @@ describe('Veterinarian Flow E2E - Continuous Journey', function () {
     
     const subtitle = await driver.wait(until.elementLocated(By.xpath('//p[contains(., "30 dias")]')), 8000);
     void expect(await subtitle.isDisplayed()).to.be.true;
+  });
+
+  it('Passo 11: Deve fazer logout, logar como Veterinário comum e verificar a restrição de acesso ao Dashboard', async function () {
+    const sidebar = new SidebarPage(driver);
+    await sidebar.logout();
+
+    const loginPage = new LoginPage(driver);
+    await loginPage.waitForUrlContains('/login');
+
+    await loginPage.login('camila.global@iougurt.com', TEST_DATA.OWNER_PASSWORD);
+    await loginPage.waitForUrlContains('/home');
+
+    const isDashboardLinkVisible = await sidebar.isLinkVisible('dashboard');
+    expect(isDashboardLinkVisible).to.equal(false);
+
+    await driver.get(`${ENV.BASE_URL}/dashboard`);
+
+    await driver.wait(until.urlContains('/home'), 8000);
+    const currentUrl = await driver.getCurrentUrl();
+    expect(currentUrl).to.not.include('/dashboard');
+    expect(currentUrl).to.include('/home');
+
+    // Limpar sessão
+    await sidebar.logout();
+    await loginPage.waitForUrlContains('/login');
   });
 });

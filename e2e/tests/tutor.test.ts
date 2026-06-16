@@ -121,6 +121,15 @@ describe('Tutor Flow E2E - Continuous Journey', function () {
     const detailsContent = await driver.wait(until.elementLocated(By.css('.history-detail-content')), 10000);
     void expect(await detailsContent.isDisplayed()).to.be.true;
 
+    // Validar o Bloco de Resumo IA (US13)
+    const aiSummaryBlock = await driver.wait(
+      until.elementLocated(By.xpath('//section[contains(@class, "history-detail-block") and h3[contains(text(), "Resumo IA:")]]')),
+      8000
+    );
+    expect(await aiSummaryBlock.isDisplayed()).to.equal(true);
+    const aiSummaryText = await aiSummaryBlock.findElement(By.tagName('p')).getText();
+    expect(aiSummaryText.length).to.be.greaterThan(0);
+
     const backBtn = await driver.findElement(By.css('.care-back-button'));
     await backBtn.click();
 
