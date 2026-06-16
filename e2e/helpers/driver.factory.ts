@@ -9,7 +9,7 @@ export async function createDriver(): Promise<WebDriver> {
   options.addArguments('--no-sandbox');
   options.addArguments('--disable-dev-shm-usage');
   options.addArguments('--disable-extensions');
-  // Suprime mensagens internas do Chrome (GPU, GCM, notificações, etc.)
+
   options.addArguments('--log-level=3');
   options.addArguments('--silent');
   options.addArguments('--disable-background-networking');
