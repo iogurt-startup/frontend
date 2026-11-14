@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, PawPrint, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { getErrorMessage } from '../../lib/errorMessage'
+import { getPatientSpeciesLabel } from '../../lib/patientFields'
 import { portalService } from '../../lib/portalService'
 import { useAuthStore } from '../../stores/authStore'
+import { TutorVaccineAlertBanner } from '../../components/portal/TutorVaccineAlertBanner'
+import { RequestAppointmentModal } from '../../components/portal/RequestAppointmentModal'
 import type {
   TutorAlert,
   TutorDashboard,
@@ -13,6 +16,9 @@ import type {
 import '../../styles/portal.css'
 
 const APPOINTMENT_LABELS: Record<string, string> = {
+  GENERAL: 'Consulta geral',
+  RETURN: 'Retorno',
+  SURGICAL_EVALUATION: 'Avaliação cirúrgica',
   VACCINATION: 'Vacinacao',
   OBSERVATION: 'Consulta',
   EXAM: 'Hemograma',
@@ -20,6 +26,9 @@ const APPOINTMENT_LABELS: Record<string, string> = {
 }
 
 const APPOINTMENT_CLASSES: Record<string, string> = {
+  GENERAL: 'tutor-appointment-row yellow',
+  RETURN: 'tutor-appointment-row cyan',
+  SURGICAL_EVALUATION: 'tutor-appointment-row lilac',
   VACCINATION: 'tutor-appointment-row cyan',
   OBSERVATION: 'tutor-appointment-row yellow',
   EXAM: 'tutor-appointment-row lilac',
@@ -126,6 +135,14 @@ export function TutorPortalHomePage() {
   const [selectedPetId, setSelectedPetId] = useState('')
   const [selectedHistory, setSelectedHistory] = useState<TutorPortalPatientHistory | null>(null)
   const [petTransitionDirection, setPetTransitionDirection] = useState<'next' | 'prev'>('next')
+
+  const [selectedAlertForRequest, setSelectedAlertForRequest] = useState<TutorAlert | null>(null)
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false)
+
+  function handleRequestAppointmentFromAlert(alert: TutorAlert) {
+    setSelectedAlertForRequest(alert)
+    setIsRequestModalOpen(true)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -256,6 +273,11 @@ export function TutorPortalHomePage() {
         <h1>Ola {getFirstName(user?.name)}!</h1>
       </header>
 
+      <TutorVaccineAlertBanner
+        alerts={alerts}
+        onRequestAppointment={handleRequestAppointmentFromAlert}
+      />
+
       <div className="tutor-home-grid">
         <section className="tutor-main-column">
           <article className="tutor-card tutor-pet-card">
@@ -316,7 +338,7 @@ export function TutorPortalHomePage() {
                   <div><span>Nome do Pet:</span><strong>{selectedHistory.patient.name}</strong></div>
                   <div><span>Data de nascimento:</span><strong>{formatDate(selectedHistory.patient.birthDate)}</strong></div>
                   <div><span>Idade:</span><strong>{getAge(selectedHistory.patient.birthDate)}</strong></div>
-                  <div><span>Especie:</span><strong>{selectedHistory.patient.species || 'Nao informado'}</strong></div>
+                  <div><span>Especie:</span><strong>{getPatientSpeciesLabel(selectedHistory.patient.species)}</strong></div>
                   <div><span>Raca:</span><strong>{selectedHistory.patient.breed || 'Nao informado'}</strong></div>
                   <div><span>Sexo:</span><strong>{selectedHistory.patient.sex || 'Nao informado'}</strong></div>
                   <div><span>Peso atual:</span><strong>{formatWeight(selectedHistory.patient.weightKg)}</strong></div>
@@ -377,6 +399,24 @@ export function TutorPortalHomePage() {
           </article>
         </aside>
       </div>
+
+      {isRequestModalOpen && selectedAlertForRequest && (
+        <RequestAppointmentModal
+          isOpen={isRequestModalOpen}
+          patientId={selectedAlertForRequest.patientId || selectedPetId}
+          patientName={selectedAlertForRequest.patientName}
+          vaccineName={selectedAlertForRequest.vaccineName}
+          initialCategory="VACCINATION"
+          onClose={() => {
+            setIsRequestModalOpen(false)
+            setSelectedAlertForRequest(null)
+          }}
+          onSuccess={() => {
+            setIsRequestModalOpen(false)
+            setSelectedAlertForRequest(null)
+          }}
+        />
+      )}
     </div>
   )
 }
